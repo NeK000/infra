@@ -1,0 +1,26 @@
+- name: Update APT package list
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Upgrade all APT packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+    autoclean: true
+
+- name: Install bash completion
+  ansible.builtin.apt:
+    name: bash-completion
+    state: present
+
+- name: Enable docker completion for bash
+  become: false
+  ansible.builtin.lineinfile:
+    path: ~/.bashrc
+    line: '# On Linux:
+cat <<EOT >> ~/.bashrc
+if [ -f /etc/bash_completion ]; then
+    . /etc/bash_completion
+fi
+EOT'
+    state: absent

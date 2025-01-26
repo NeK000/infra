@@ -1,0 +1,45 @@
+# roles/ansible-role-system-configuration/tasks/main.yml
+- name: Create mount point
+  ansible.builtin.file:
+    path: /shares/swarm
+    state: directory
+  become: true
+
+- name: Ensure NFS entry is in /etc/fstab
+  ansible.builtin.lineinfile:
+    path: /etc/fstab
+    line: '10.10.60.15:/AppData /shares/swarm nfs noauto,nofail,x-systemd.automount,x-systemd.device-timeout=90 0 0'
+    state: absent
+
+- name: Mount NFS Share
+  ansible.posix.mount:
+    path: /shares/swarm
+    src: 10.10.60.15:/AppData
+    fstype: nfs
+    opts: rw,sync,hard
+    state: mounted
+  become: true
+
+- name: Ensure directory has correct permissions
+  block:
+    - name: Add test file for permission check
+      ansible.builtin.file:
+        path: /shares/swarm/testfile
+        state: touch
+        mode: '0777'
+
+    - name: Check directory permissions
+      ansible.builtin.stat:
+        path: /shares/swarm
+      register: dir_permissions
+
+    - name: Set directory permissions if needed
+      ansible.builtin.file:
+        path: /shares/
+        mode: '0777'
+      when: dir_permissions.stat.mode != '0777'
+
+    - name: Remove test file
+      ansible.builtin.file:
+        path: /shares/swarm/testfile
+        state: absent

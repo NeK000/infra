@@ -1,0 +1,34 @@
+# ansible-role-swarm-initialization/tasks/main.yml
+
+- name: Set command and arguments
+  community.docker.docker_swarm_service:
+    name: viz
+    image: alexellis2/visualizer-arm:latest
+    placement:
+      preferences:
+        - spread: node.labels.mylabel
+      constraints:
+        - node.role == manager
+    publish:
+      - protocol: tcp
+        published_port: 10001
+        target_port: 8080
+    mounts:
+      - source: /var/run/docker.sock
+        target: /var/run/docker.sock
+        type: bind
+  when: inventory_hostname == groups['managers'][0]
+
+- name: Check Docker services
+  ansible.builtin.command: docker service ls
+  register: service_status
+  when: inventory_hostname == groups['managers'][0]
+  check_mode: false
+  changed_when: false
+
+- name: Display service status
+  ansible.builtin.debug:
+    var: service_status.stdout
+  when: inventory_hostname == groups['managers'][0]
+  check_mode: false
+  changed_when: false

@@ -8,5 +8,5 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - /shares/storage/appdata/homepage:/app/config
+      - /shares/storage/applications/homepage:/app/config
     restart: unless-stopped

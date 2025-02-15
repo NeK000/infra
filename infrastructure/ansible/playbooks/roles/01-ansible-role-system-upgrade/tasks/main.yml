@@ -1,0 +1,9 @@
+- name: Update APT package list
+  ansible.builtin.apt:
+    update_cache: true
+
+- name: Upgrade all APT packages
+  ansible.builtin.apt:
+    upgrade: dist
+    autoremove: true
+    autoclean: true

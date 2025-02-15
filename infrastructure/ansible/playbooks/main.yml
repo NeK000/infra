@@ -1,11 +1,15 @@
-# playbooks/main.yml
 
-- name: Bootstrap Swarm
-  hosts: swarm
+- name: Bootstrap storage servers
+  hosts: prod-storage
   become: true
   roles:
-     - ansible-role-system-upgrade
-     - ansible-role-install-docker
-     - ansible-role-system-configuration
-#     - ansible-role-swarm-initialization
-     - ansible-role-swarm-deploy
+    # - 01-ansible-role-system-upgrade
+
+- name: Bootstrap servers
+  hosts: servers
+  become: true
+  roles:
+   #  - 01-ansible-role-system-upgrade
+    # - 02-ansible-role-install-docker
+    # - 03-ansible-role-system-configuration
+     - 04-ansible-role-portainer-agent

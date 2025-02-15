@@ -1,4 +1,4 @@
-# ansible-role-swarm-initialization/tasks/main.yml
+#Deprecated
 
 - name: Set command and arguments
   community.docker.docker_swarm_service:

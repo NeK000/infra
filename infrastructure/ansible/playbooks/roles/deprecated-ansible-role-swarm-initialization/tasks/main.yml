@@ -1,4 +1,4 @@
-# ansible-role-swarm-initialization/tasks/main.yml
+#Deprecated
 
 - name: Initialize Docker Swarm on the first manager
   ansible.builtin.shell: >

@@ -1,4 +1,7 @@
-# roles/ansible-role-install-docker/tasks/main.yml
+- name: Install python3 docker
+  ansible.builtin.apt:
+    name: python3-docker
+    state: present
 
 - name: Download Docker installation script
   ansible.builtin.get_url:
@@ -46,13 +49,6 @@
         "debug" : false
       }
     mode: '0644'
-
-- name: Update cmdline.txt to enable memory cgroup
-  ansible.builtin.lineinfile:
-    path: /boot/firmware/cmdline.txt
-    line: "cgroup_enable=memory cgroup_memory=1"
-    state: present
-  when: inventory_hostname in groups['workers']
 
 - name: Reload systemd daemon
   ansible.builtin.systemd:

@@ -1,0 +1,11 @@
+---
+services:
+
+  stirling-pdf:
+    image: stirlingtools/stirling-pdf:latest
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "pdf"
+      tsdproxy.container_port: 18080
+    ports:
+      - 18080:8080

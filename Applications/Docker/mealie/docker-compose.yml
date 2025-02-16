@@ -1,0 +1,15 @@
+services:
+  mealie:
+    image: ghcr.io/mealie-recipes/mealie:v1.0.0
+    container_name: mealie
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "recipes"
+      tsdproxy.container_port: 19000
+    volumes:
+      - /shares/storage/applications/mealie:/app/data
+    ports:
+      - 19000:9000
+    environment:
+      - ALLOW_SIGNUP=true
+    restart: unless-stopped

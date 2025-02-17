@@ -1,0 +1,22 @@
+services:
+  app:
+    image: fireflyiii/core:latest
+    container_name: firefly_iii_core
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "budget"
+      tsdproxy.container_port: 18080
+    volumes:
+      - /shares/storage/applications/firefly_iii_upload:/var/www/html/storage/upload
+    ports:
+      - 18080:8080
+    environment:
+      DB_CONNECTION: pgsql
+      DB_USERNAME: ${PG_USER}
+      DB_PASSWORD: ${PG_PASS}
+      DB_HOST: ${PG_HOST}
+      DB_PORT: ${PG_PORT}
+      DB_DATABASE: ${PG_DB}
+      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
+      APP_KEY: ${APP_KEY}
+    restart: unless-stopped

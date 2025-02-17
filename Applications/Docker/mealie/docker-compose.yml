@@ -17,5 +17,5 @@ services:
       POSTGRES_PASSWORD: ${PG_PASS}
       POSTGRES_SERVER: ${PG_HOST}
       POSTGRES_PORT: ${PG_PORT}
-      POSTGRES_DB:${PG_DB}
+      POSTGRES_DB: ${PG_DB}
     restart: unless-stopped

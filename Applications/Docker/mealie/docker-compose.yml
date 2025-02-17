@@ -6,6 +6,13 @@ services:
       tsdproxy.enable: "true"
       tsdproxy.name: "recipes"
       tsdproxy.container_port: 19000
+    environment:
+      DB_ENGINE: postgres
+      POSTGRES_USER: ${PG_USER}
+      POSTGRES_PASSWORD: ${PG_PASS}
+      POSTGRES_SERVER: ${PG_HOST}
+      POSTGRES_PORT: ${PG_PORT}
+      POSTGRES_DB: ${PG_DB}
     volumes:
       - /shares/storage/applications/mealie:/app/data
     ports:

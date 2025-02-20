@@ -1,8 +1,0 @@
-# playbooks/main.yml
-
-- name: Configure WSL2 instance
-  hosts: localhost
-  become: true
-  roles:
-     - ansible-role-system-upgrade
-     - ansible-role-system-terminal

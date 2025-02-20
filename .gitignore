@@ -9,6 +9,7 @@ secrets
 **/.env*
 **/.vault-password
 
+galaxy_roles**
 
 # Compiled class file
 *.class

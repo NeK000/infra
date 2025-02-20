@@ -1,35 +1,18 @@
-- name: Download Starship
-  ansible.builtin.shell: curl -sS https://starship.rs/install.sh -o ~/install.sh
+- name: Install wget docker
+  ansible.builtin.apt:
+    name: wget
+    state: present
+
+- name: Install git docker
+  ansible.builtin.apt:
+    name: git
+    state: present
+
+- name: Install zsh docker
+  ansible.builtin.apt:
+    name: zsh
+    state: present
+- name: Install Oh my zsh
+  ansible.builtin.shell: sh -c "$(wget https://raw.github.com/robbyrussell/oh-my-zsh/master/tools/install.sh -O -)"
   args:
     executable: /bin/bash
-
-- name: Change permission on install.sh file
-  file:
-    path: ~/install.sh
-    state: file
-    owner: root
-    group: root
-    mode: 0755
-
-- name: Install Starship
-  ansible.builtin.shell:  ~/install.sh -f
-  args:
-    executable: /bin/sh
-
-- name: remove Starship
-  ansible.builtin.shell: rm -rf   ~/install.sh
-  args:
-    executable: /bin/bash
-
-- name: Enable starship for bash
-  ansible.builtin.lineinfile:
-    path: ~/.bashrc
-    line: 'eval "$(starship init bash)"'
-    state: absent
-
-- name: Download starship.toml from Gist
-  become: false
-  ansible.builtin.get_url:
-    url: "https://gist.githubusercontent.com/NeK000/32e78fcb3f0bdb44e738d85dce7fdb88/raw/f8892e251887c1c245962a0ca5dca4ba078466f1/starship.toml"
-    dest: "~/.config/starship.toml"
-    mode: '0644'

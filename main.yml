@@ -1,11 +1,15 @@
 
 - name: Bootstrap storage servers
   hosts: prod-storage
+  vars_files:
+    - '../vars/vault.yaml'
   become: true
   roles:
     # - 01-ansible-role-system-upgrade
 
 - name: Bootstrap servers
+  vars_files:
+    - '../vars/vault.yaml'
   hosts: servers
   become: true
   roles:

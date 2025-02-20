@@ -24,7 +24,7 @@ add-submodule URL *NAME:
         git add .gitmodules "roles/{{NAME}}"
         git commit -m "Adds {{NAME}} as a submodule"
     fi
-    
+
 ## repo stuff
 # optionally use --force to force reinstall all requirements
 reqs *FORCE:
@@ -35,9 +35,5 @@ vault ACTION:
     EDITOR='code --wait' ansible-vault {{ACTION}} group_vars/vault.yaml
 
 # configure
-configure-prod:
-    ansible-playbook -b playbooks/prod-servers.yaml
-configure-test:
-    ansible-playbook -b playbooks/test-servers.yaml
-configure-storage:
-    ansible-playbook -b playbooks/prod-storage.yaml
+configure:
+    ansible-playbook -b run.yaml

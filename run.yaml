@@ -1,0 +1,46 @@
+---
+
+  # - hosts: prod-1
+  #   vars_files:
+  #   - 'group_vars/vault.yaml'
+  #   roles:
+  #     - role: 01-ansible-role-system-upgrade
+  #     - role: geerlingguy.docker
+  #     - role: ironicbadger.bash_aliases
+  #     - role: 02-ansible-role-system-configuration
+  #     - role: ironicbadger.docker-compose-generator
+        
+  - hosts: prod-2
+    vars_files:
+    - 'group_vars/vault.yaml'
+    roles:
+      - role: 01-ansible-role-system-upgrade
+      - role: geerlingguy.docker
+      - role: ironicbadger.bash_aliases
+      - role: 02-ansible-role-system-configuration
+      - role: ironicbadger.docker-compose-generator
+        tags: compose
+      - role: 03-ansible-role-docker-compose-service  
+        
+  # - hosts: prod-storage
+  #   vars_files:
+  #   - 'group_vars/vault.yaml'
+  #   roles:
+  #     - role: 01-ansible-role-system-upgrade
+  #     - role: geerlingguy.docker
+  #     - role: ironicbadger.bash_aliases
+  #     - role: 02-ansible-role-system-configuration
+  #     - role: ironicbadger.docker-compose-generator
+
+        
+  - hosts: test-1
+    vars_files:
+    - 'group_vars/vault.yaml'
+    roles:
+      # - role: 01-ansible-role-system-upgrade
+      # - role: geerlingguy.docker
+      # - role: ironicbadger.bash_aliases
+      # - role: 02-ansible-role-system-configuration
+      - role: ironicbadger.docker-compose-generator
+        tags: compose
+      - role: 03-ansible-role-docker-compose-service  

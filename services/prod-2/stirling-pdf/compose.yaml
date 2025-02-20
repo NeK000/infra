@@ -3,6 +3,7 @@ services:
 
   stirling-pdf:
     image: stirlingtools/stirling-pdf:latest
+    container_name: pdf
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "pdf"

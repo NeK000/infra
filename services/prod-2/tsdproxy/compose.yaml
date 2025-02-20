@@ -4,9 +4,9 @@ services:
     container_name: tsdproxy
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
-      - /shares/storage/applications/tsdproxy:/data
+      - "{{ appdata_path_heimdall }}/tsdproxy:/data"
     environment:
-      - TSDPROXY_AUTHKEY=${TSKEY_AUTH}
-      - TSDPROXY_HOSTNAME=${TSDPROXY_HOSTNAME}
+      - TSDPROXY_AUTHKEY="{{ TSKEY_AUTH }}"
+      - TSDPROXY_HOSTNAME="{{ TSDPROXY_HEIMDALL }}"
       - DOCKER_HOST=unix:///var/run/docker.sock
     restart: unless-stopped

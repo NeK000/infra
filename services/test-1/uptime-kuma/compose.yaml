@@ -5,5 +5,5 @@ services:
     ports:
      - 3001:3001
     volumes:
-     - /shares/storage/applications/uptimekuma:/app/data
+     - "{{ appdata_path }}/uptimekuma:/app/data"
     restart: unless-stopped

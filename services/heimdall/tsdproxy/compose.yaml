@@ -6,7 +6,7 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
       - "{{ appdata_path_server }}/tsdproxy:/data"
     environment:
-      - TSDPROXY_AUTHKEY="{{ TSKEY_AUTH }}"
-      - TSDPROXY_HOSTNAME="{{ TSDPROXY_HEIMDALL }}"
+      - TSDPROXY_AUTHKEY={{ TSKEY_AUTH }}
+      - TSDPROXY_HOSTNAME={{ TSDPROXY_ODIN }}
       - DOCKER_HOST=unix:///var/run/docker.sock
-    restart: unless-stopped
+    restart: on-failure:10

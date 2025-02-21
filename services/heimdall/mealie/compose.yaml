@@ -5,11 +5,11 @@ services:
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "recipes"
-      tsdproxy.container_port: 19000
+      tsdproxy.container_port: {{ mealie_port }}
     volumes:
       - "{{ appdata_path }}/mealie:/app/data"
     ports:
-      - 19000:9000
+      - {{ mealie_port }}:9000
     environment:
       ALLOW_SIGNUP: true
       DB_ENGINE: postgres
@@ -18,4 +18,4 @@ services:
       POSTGRES_SERVER: "{{ MEALIE_PG_HOST }}"
       POSTGRES_PORT: "{{ MEALIE_PG_PORT }} "
       POSTGRES_DB: "{{ MEALIE_PG_DB }}"
-    restart: unless-stopped
+    restart: on-failure:10

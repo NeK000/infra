@@ -5,18 +5,18 @@ services:
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "budget"
-      tsdproxy.container_port: 18081
+      tsdproxy.container_port: {{ fireflyiii_port }}
     volumes:
-      - /shares/storage/applications/firefly_iii_upload:/var/www/html/storage/upload
+      - "{{ appdata_path }}/firefly_iii_upload:/var/www/html/storage/upload"
     ports:
-      - 18081:8080
+      - {{ fireflyiii_port }}:8080
     environment:
       DB_CONNECTION: pgsql
-      DB_USERNAME: ${PG_USER}
-      DB_PASSWORD: ${PG_PASS}
-      DB_HOST: ${PG_HOST}
-      DB_PORT: ${PG_PORT}
-      DB_DATABASE: ${PG_DB}
-      TRUSTED_PROXIES: ${TRUSTED_PROXIES}
-      APP_KEY: ${APP_KEY}
-    restart: unless-stopped
+      DB_USERNAME:  "{{ MEALIE_PG_USER }}"
+      DB_PASSWORD: "{{ FIREFLY_PG_PASS }}"
+      DB_HOST:  "{{ FIREFLY_PG_HOST }}"
+      DB_PORT: "{{ FIREFLY_PG_PORT }}"
+      DB_DATABASE: "{{ FIREFLY_PG_DB }}"
+      TRUSTED_PROXIES: "{{ FIREFLY_TRUSTED_PROXIES }}"
+      APP_KEY:  "{{ FIREFLY_APP_KEY }}"
+    restart: on-failure:10

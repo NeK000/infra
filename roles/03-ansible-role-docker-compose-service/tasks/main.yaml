@@ -17,3 +17,10 @@
     name: docker-compose.service
     enabled: yes
     state: started
+
+- name: Enable and start the docker-compose service
+  become: yes
+  ansible.builtin.systemd_service:
+    name: docker-compose.service
+    daemon_reload: true
+    state: restarted

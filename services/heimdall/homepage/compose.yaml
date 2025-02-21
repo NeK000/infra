@@ -8,5 +8,5 @@ services:
     ports:
       - 3000:3000
     volumes:
-      - /shares/storage/applications/homepage:/app/config
-    restart: unless-stopped
+      - "{{ appdata_path }}/homepage:/app/config"
+    restart: on-failure:10

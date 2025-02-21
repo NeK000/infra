@@ -1,0 +1,9 @@
+services:
+  uptime-kuma:
+    image: louislam/uptime-kuma:1
+    container_name: uptime-kuma
+    ports:
+     - 3001:3001
+    volumes:
+     - "{{ appdata_path_server }}/uptimekuma:/app/data"
+    restart: unless-stopped

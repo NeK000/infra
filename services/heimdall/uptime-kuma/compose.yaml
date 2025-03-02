@@ -2,6 +2,9 @@ services:
   uptime-kuma:
     image: louislam/uptime-kuma
     container_name: uptime-kuma
+    environment:
+      PUID: 1000
+      PGID: 1000
     ports:
      - 3001:3001
     volumes:

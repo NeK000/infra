@@ -19,7 +19,7 @@ package_list:
   - name: nmap
   - name: wget
 
-# ironicbadger.bash-aliases 
+# ironicbadger.bash-aliases
 bash_aliases:
   - { alias: "dtail", command: "docker logs -tf --tail='50' " }
   - { alias: "dup", command: "docker-compose -f ~/docker-compose.yml -d " }

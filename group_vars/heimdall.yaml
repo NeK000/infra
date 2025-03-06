@@ -19,6 +19,7 @@ package_list:
   - name: net-tools
   - name: nmap
   - name: wget
+  - name: pipx
 
 # ironicbadger.bash-aliases
 bash_aliases:

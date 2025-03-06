@@ -1,0 +1,4 @@
+---
+- name: Install IoTuring
+  community.general.pipx:
+    name: IoTuring

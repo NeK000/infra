@@ -38,6 +38,6 @@ vault ACTION:
 initial:
     ansible-playbook -b run.yaml
 deploy:
-    ansible-playbook -b deploy.yaml  
+    ansible-playbook -b deploy.yaml
 update:
     ansible-playbook -b update.yaml

@@ -1,0 +1,16 @@
+[Unit]
+Description=IoTuring Service
+After=network.target
+
+[Service]
+Type=simple
+ExecStart=/home/pi/.local/bin/IoTuring
+ExecReload=/bin/kill -HUP $MAINPID
+Restart=on-failure
+StandardOutput=syslog
+StandardError=syslog
+User=pi
+SyslogIdentifier=IoTuring
+
+[Install]
+WantedBy=multi-user.target

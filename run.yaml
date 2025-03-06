@@ -1,44 +1,17 @@
 ---
 
-  - hosts: odin
+  - hosts: initial
     vars_files:
     - 'group_vars/vault.yaml'
     roles:
-      - role: 01-ansible-role-system-upgrade
-      - role: GROG.package
+      # - role: 01-ansible-role-system-upgrade
+      # - role: GROG.package
       # - role: geerlingguy.docker
       # - role: ironicbadger.bash_aliases
       # - role: 02-ansible-role-system-configuration
       # - role: ironicbadger.docker-compose-generator
       # - role: 03-ansible-role-docker-compose-service
       - role: 04-ansible-role-ioturing
-
-  - hosts: heimdall
-    vars_files:
-    - 'group_vars/vault.yaml'
-    roles:
-      - role: 01-ansible-role-system-upgrade
-      - role: GROG.package
-      # - role: geerlingguy.docker
-      # - role: ironicbadger.bash_aliases
-      # - role: 02-ansible-role-system-configuration
-      # - role: ironicbadger.docker-compose-generator
-      # - role: 03-ansible-role-docker-compose-service
-      - role: 04-ansible-role-ioturing
-
-  - hosts: loki
-    vars_files:
-    - 'group_vars/vault.yaml'
-    roles:
-      - role: 01-ansible-role-system-upgrade
-      - role: GROG.package
-      # - role: geerlingguy.docker
-      # - role: ironicbadger.bash_aliases
-      # - role: 02-ansible-role-system-configuration
-      # - role: ironicbadger.docker-compose-generator
-      # - role: 03-ansible-role-docker-compose-service
-      - role: 04-ansible-role-ioturing
-
 
   - hosts: nasty
     vars_files:

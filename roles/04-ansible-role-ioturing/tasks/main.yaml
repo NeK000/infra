@@ -2,3 +2,37 @@
 - name: Install IoTuring
   community.general.pipx:
     name: IoTuring
+    state: latest
+
+- name: Create IoTuring directory if it doesn't exist
+  ansible.builtin.file:
+    path: "/home/pi/.local/bin/.config/IoTuring"
+    state: directory
+    mode: '0755'
+    owner: "{{ ansible_user_id }}"
+
+- name: Copy configuration file to servers
+  ansible.builtin.copy:
+    src: "{{ playbook_dir }}/configurations/{{ inventory_hostname }}/configurations.json.j2"
+    dest: "/home/pi/.local/bin/.config/IoTuring/configurations.json"
+    owner: "{{ ansible_user_id }}"
+    mode: '0644'
+
+- name: Copy the systemd service file for ioturing
+  become: yes
+  template:
+    src: ioturing.service.j2
+    dest: /etc/systemd/system/ioturing.service
+    mode: '0644'
+
+- name: Reload systemd to read new service
+  become: yes
+  systemd:
+    daemon_reload: yes
+
+- name: Enable and start the ioturing service
+  become: yes
+  systemd:
+    name: docker-compose.service
+    enabled: yes
+    state: started

@@ -1,5 +1,4 @@
 services:
-
   stirling-pdf:
     image: stirlingtools/stirling-pdf:latest
     container_name: pdf
@@ -9,4 +8,4 @@ services:
       tsdproxy.container_port: {{ pdf_port }}
     ports:
       - {{ pdf_port }}:8080
-    restart: on-failure:10
+    restart: always

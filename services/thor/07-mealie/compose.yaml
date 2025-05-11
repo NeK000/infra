@@ -13,9 +13,9 @@ services:
     environment:
       ALLOW_SIGNUP: true
       DB_ENGINE: postgres
-      POSTGRES_USER: "{{ MEALIE_PG_USER }}"
-      POSTGRES_PASSWORD: "{{ MEALIE_PG_PASS }}"
-      POSTGRES_SERVER: "{{ MEALIE_PG_HOST }}"
-      POSTGRES_PORT: "{{ MEALIE_PG_PORT }} "
-      POSTGRES_DB: "{{ MEALIE_PG_DB }}"
-    restart: on-failure:10
+      POSTGRES_USER: "{{ PG_USER }}"
+      POSTGRES_PASSWORD: "{{ PG_PASS }}"
+      POSTGRES_SERVER: "{{ PG_HOST }}"
+      POSTGRES_PORT: "{{ PG_PORT }} "
+      POSTGRES_DB: "{{ PG_DB_MEALIE }}"
+    restart: always

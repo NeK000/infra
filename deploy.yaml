@@ -5,4 +5,5 @@
     - 'group_vars/vault.yaml'
     roles:
       - role: ironicbadger.docker-compose-generator
-      - role: 03-ansible-role-docker-compose-service
+    vars:
+      ansible_become_password: "{{ password }}"

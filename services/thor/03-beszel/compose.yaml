@@ -2,13 +2,13 @@ services:
   beszel:
     image: henrygd/beszel
     container_name: beszel
+    restart: unless-stopped
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "beszel"
-      tsdproxy.container_port: 58090
-    restart: unless-stopped
+      tsdproxy.container_port: {{ beszel_port }}
     ports:
-      - 58090:8090
+      - {{ beszel_port }}:8090
     volumes:
       - "{{ appdata_path }}/beszel_data:/beszel_data"
     extra_hosts:

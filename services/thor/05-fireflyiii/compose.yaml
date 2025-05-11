@@ -1,7 +1,8 @@
 services:
-  app:
+  firefly_iii_core:
     image: fireflyiii/core:latest
     container_name: firefly_iii_core
+    restart: unless-stopped
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "budget"
@@ -12,11 +13,10 @@ services:
       - {{ fireflyiii_port }}:8080
     environment:
       DB_CONNECTION: pgsql
-      DB_USERNAME:  "{{ MEALIE_PG_USER }}"
-      DB_PASSWORD: "{{ FIREFLY_PG_PASS }}"
-      DB_HOST:  "{{ FIREFLY_PG_HOST }}"
-      DB_PORT: "{{ FIREFLY_PG_PORT }}"
-      DB_DATABASE: "{{ FIREFLY_PG_DB }}"
+      DB_USERNAME:  "{{ PG_USER }}"
+      DB_PASSWORD: "{{ PG_PASS }}"
+      DB_HOST:  "{{ PG_HOST }}"
+      DB_PORT: "{{ PG_PORT }}"
+      DB_DATABASE: "{{ PG_DB_FIREFLY }}"
       TRUSTED_PROXIES: "{{ FIREFLY_TRUSTED_PROXIES }}"
       APP_KEY:  "{{ FIREFLY_APP_KEY }}"
-    restart: on-failure:10

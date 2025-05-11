@@ -1,7 +1,0 @@
----
-
-  - hosts: update-servers
-    vars_files:
-    - 'group_vars/vault.yaml'
-    roles:
-      - role: 01-ansible-role-system-upgrade

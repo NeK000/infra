@@ -1,0 +1,13 @@
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "dozzle"
+      tsdproxy.container_port: {{ dozzle_port }}
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - {{ dozzle_port }}:8080
+    restart: unless-stopped

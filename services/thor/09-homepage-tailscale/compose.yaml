@@ -5,7 +5,7 @@ services:
     restart: always
     labels:
       tsdproxy.enable: "true"
-      tsdproxy.name: "dashboard"
+      tsdproxy.name: "news"
       tsdproxy.container_port: {{ glance_tailscale_port }}
     volumes:
       - "{{ appdata_path }}/glance-config:/app/config"

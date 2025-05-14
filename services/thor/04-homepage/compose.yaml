@@ -3,6 +3,10 @@ services:
     image: ghcr.io/gethomepage/homepage:latest
     container_name: homepage
     restart: always
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "dashboard"
+      tsdproxy.container_port: {{ homepage_port }}
     environment:
       PUID: 1000
       PGID: 1000

@@ -1,0 +1,13 @@
+services:
+  librespeed:
+    image: lscr.io/linuxserver/librespeed:latest
+    container_name: librespeed
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "librespeed"
+      tsdproxy.container_port: {{ librespeed_tailscale_port }}
+    ports:
+      - {{ librespeed_tailscale_port }}:80
+    environment:
+      - MODE=standalone
+    restart: unless-stopped

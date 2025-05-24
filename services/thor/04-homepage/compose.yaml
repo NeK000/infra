@@ -10,6 +10,7 @@ services:
     environment:
       PUID: 1000
       PGID: 1000
+      HOMEPAGE_ALLOWED_HOSTS: {{ tailnet_domain_dashboard }}
     ports:
       - {{ homepage_port }}:3000
     volumes:

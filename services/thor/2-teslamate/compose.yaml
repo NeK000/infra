@@ -30,6 +30,9 @@ services:
     image: teslamate/grafana:latest
     container_name: teslamate-grafana
     restart: always
+    environment:
+      PUID: 472
+      PGID: 472
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "teslamate-grafana"

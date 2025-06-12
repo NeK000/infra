@@ -3,10 +3,9 @@ services:
     image: almeidapaulopt/tsdproxy:latest
     container_name: tsdproxy
     restart: unless-stopped
+    ports:
+      - "28080:8080"   
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock
       - "{{ appdata_path_server }}/tsdproxy:/data"
-    environment:
-      - TSDPROXY_AUTHKEY={{ TSKEY_AUTH }}
-      - TSDPROXY_HOSTNAME={{ TSDPROXY_THOR }}
-      - DOCKER_HOST=unix:///var/run/docker.sock
+      - "{{ appdata_path_server }}/tsdproxy-config:/config"   

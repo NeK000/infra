@@ -1,10 +1,11 @@
 ---
 
-  - hosts: thor
+  - hosts: all
     gather_facts: no
     vars_files:
     - 'group_vars/vault.yaml'
     - 'group_vars/thor.yaml'
+    - 'group_vars/tower.yaml'
     roles:
       - role: ironicbadger.docker-compose-generator
     vars:

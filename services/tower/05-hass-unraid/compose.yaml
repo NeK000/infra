@@ -1,0 +1,20 @@
+services:
+  hass-unraid:
+    image: ghcr.io/idmedia/hass-unraid:latest
+    container_name: hass-unraid
+    network_mode: bridge
+    pid: host
+    deploy:
+      resources:
+        limits:
+          pids: 2048
+    environment:
+      - TZ=Europe/Paris
+      - HOST_OS=Unraid
+      - HOST_HOSTNAME=Tower
+      - HOST_CONTAINERNAME=hass-unraid
+    labels:
+      - net.unraid.docker.managed=dockerman
+      - net.unraid.docker.icon=https://raw.githubusercontent.com/IDmedia/hass-unraid/main/extras/logo.png
+    volumes:
+      - "{{appdata_path}}/hass-unraid:/data:rw"

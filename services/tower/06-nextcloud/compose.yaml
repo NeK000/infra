@@ -1,0 +1,24 @@
+services:
+  nextcloud:
+    image: lscr.io/linuxserver/nextcloud:latest
+    container_name: nextcloud
+    environment:
+      - TZ=Europe/Paris
+      - HOST_OS=Unraid
+      - HOST_HOSTNAME=Tower
+      - HOST_CONTAINERNAME=nextcloud
+      - PUID=99
+      - PGID=100
+      - UMASK=022
+    labels:
+        tsdproxy.enable: "true"
+        tsdproxy.name: "nextcloud"
+        tsdproxy.ephemeral: "true"
+        net.unraid.docker.managed: dockerman
+        net.unraid.docker.webui: https://[IP]:[PORT:9444]
+        net.unraid.docker.icon: https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/nextcloud-logo.png
+    ports:
+      - '9444:443/tcp'
+    volumes:
+      - "{{appdata_path}}/nextcloud/data:/data:rw"
+      - "{{appdata_path}}/nextcloud/config:/config:rw"

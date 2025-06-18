@@ -1,0 +1,64 @@
+services:
+  teslamate:
+    image: teslamate/teslamate:latest
+    container_name: teslamate
+    restart: always
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "teslamate"
+      tsdproxy.ephemeral: "true"
+      net.unraid.docker.managed: "dockerman"
+      net.unraid.docker.webui: "http://[IP]:[PORT:{{ teslamate_port }}]"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/simonsickle/unraid-templates/main/teslamate/logo.png"
+    volumes:
+      - "{{ appdata_path }}/teslamate/./import:/opt/app/import"
+    ports:
+      - "{{ teslamate_port }}:4000"
+    environment:
+      ENCRYPTION_KEY: "{{ TESLAMATE_ENCRYPTION_KEY }}"
+      DATABASE_USER: "{{ PG_USER }}"
+      DATABASE_PASS: "{{ PG_PASS }}"
+      DATABASE_NAME: "{{ PG_DB_TESLAMATE }}"
+      DATABASE_HOST: "{{ PG_HOST }}"
+      MQTT_HOST: "{{ MQTT_HOST }}"
+      MQTT_USERNAME: "{{ MQTT_USERNAME }}"
+      MQTT_PASSWORD: "{{ MQTT_PASSWORD }}"
+      PORT: "{{ teslamate_port }}"
+    cap_drop:
+      - all
+  grafana:
+    image: teslamate/grafana:latest
+    container_name: teslamate-grafana
+    restart: always
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "teslamate-grafana"
+      tsdproxy.ephemeral: "true"
+      net.unraid.docker.managed: "dockerman"
+      net.unraid.docker.webui: "http://[IP]:[PORT:{{ teslamate_grafana_port }}]"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/simonsickle/unraid-templates/main/teslamate/logo.png"
+    volumes:
+      - "{{ appdata_path }}/teslamate/grafana-data:/var/lib/grafana"
+    ports:
+      - {{ teslamate_grafana_port }}:3000
+    environment:
+      DATABASE_USER: "{{ PG_USER }}"
+      DATABASE_PASS: "{{ PG_PASS }}"
+      DATABASE_NAME: "{{ PG_DB_TESLAMATE }}"
+      DATABASE_HOST: "{{ PG_HOST }}"
+      PUID: 472
+      PGID: 472
+  ABRP:
+    container_name: TeslaMate_ABRP
+    image: fetzu/teslamate-abrp:latest
+    restart: always
+    labels:
+      net.unraid.docker.managed: "dockerman"
+      net.unraid.docker.icon: "https://raw.githubusercontent.com/simonsickle/unraid-templates/main/teslamate/logo.png"
+    environment:
+      MQTT_SERVER: "{{ MQTT_HOST }}"
+      MQTT_USERNAME: "{{ MQTT_USERNAME }}"
+      MQTT_PASSWORD: "{{ MQTT_PASSWORD }}"
+      USER_TOKEN: "{{ TESLAMATE_ABRP_KEY }}"
+      CAR_NUMBER: 1
+      CAR_MODEL: "{{ TESLAMATE_ABRP_CAR_MODEL }}"

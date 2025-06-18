@@ -1,0 +1,17 @@
+services:
+  dozzle:
+    image: amir20/dozzle:latest
+    container_name: dozzle
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "dozzle"
+      tsdproxy.ephemeral: "true"
+      tsdproxy.container_port: "{{ dozzle_port }}"
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:{{ dozzle_port }}]
+      net.unraid.docker.icon: https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/dozzle.png
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock
+    ports:
+      - "{{ dozzle_port }}:8080"
+    restart: unless-stopped

@@ -1,0 +1,23 @@
+services:
+  calligra:
+    image: lscr.io/linuxserver/calligra:latest
+    container_name: calligra
+    restart: unless-stopped    
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "calligra"
+      tsdproxy.ephemeral: "true"
+      tsdproxy.container_port: "{{ calligra_tailscale_port }}"   
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:{{ calligra_tailscale_port }}]
+      net.unraid.docker.icon: https://github.com/nicolargo/glances/raw/master/glances/outputs/static/images/glances.png 
+    security_opt:
+      - seccomp:unconfined #optional
+    environment:
+      - PUID=1000
+      - PGID=1000
+      - TZ=Etc/UTC
+    volumes: 
+      - "{{ appdata_path }}/calligra/config:/config"
+    ports:
+      - "{{ calligra_tailscale_port }}:3000"

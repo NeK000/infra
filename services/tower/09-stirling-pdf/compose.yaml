@@ -8,5 +8,8 @@ services:
       tsdproxy.name: "pdf"
       tsdproxy.ephemeral: "true"
       tsdproxy.container_port: {{ pdf_port }}
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:{{ pdf_port }}]
+      net.unraid.docker.icon: https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/duplicati-logo.png
     ports:
       - {{ pdf_port }}:8080

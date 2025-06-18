@@ -2,14 +2,19 @@ services:
   mealie:
     image: ghcr.io/mealie-recipes/mealie:v1.0.0
     container_name: mealie
+    restart: always
     labels:
       tsdproxy.enable: "true"
       tsdproxy.name: "recipes"
-      tsdproxy.container_port: {{ mealie_port }}
+      tsdproxy.ephemeral: "true"
+      tsdproxy.container_port: "{{ mealie_port }}"
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:{{ mealie_port }}]
+      net.unraid.docker.icon: https://raw.githubusercontent.com/selfhosters/unRAID-CA-templates/master/templates/img/mealiev1.png
     volumes:
       - "{{ appdata_path }}/mealie:/app/data"
     ports:
-      - {{ mealie_port }}:9000
+      - "{{ mealie_port }}:9000"
     environment:
       ALLOW_SIGNUP: true
       DB_ENGINE: postgres
@@ -18,4 +23,3 @@ services:
       POSTGRES_SERVER: "{{ PG_HOST }}"
       POSTGRES_PORT: "{{ PG_PORT }} "
       POSTGRES_DB: "{{ PG_DB_MEALIE }}"
-    restart: always

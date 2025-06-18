@@ -1,0 +1,17 @@
+services:
+  librespeed:
+    image: lscr.io/linuxserver/librespeed:latest
+    container_name: librespeed
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "librespeed"
+      tsdproxy.ephemeral: "true"
+      tsdproxy.container_port: "{{ librespeed_tailscale_port }}"
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:{{ librespeed_tailscale_port }}]
+      net.unraid.docker.icon: https://raw.githubusercontent.com/devzwf/unraid-docker-templates/main/images/myspeed_logo.png
+    ports:
+      - {{ librespeed_tailscale_port }}:80
+    environment:
+      - MODE=standalone
+    restart: unless-stopped

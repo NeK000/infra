@@ -12,4 +12,4 @@ services:
       net.unraid.docker.webui: http://[IP]:[PORT:{{ pdf_port }}]
       net.unraid.docker.icon: https://raw.githubusercontent.com/linuxserver/docker-templates/master/linuxserver.io/img/duplicati-logo.png
     ports:
-      - {{ pdf_port }}:8080
+      - "{{ pdf_port }}:8080"

@@ -1,0 +1,18 @@
+services:
+  ninik-simplelinks:
+    image: fascinated/simple-links:latest
+    container_name: ninik-simplelinks
+    restart: unless-stopped
+    labels:
+      tsdproxy.enable: "true"
+      tsdproxy.name: "ninik-me"
+      tsdproxy.ephemeral: "true"
+      tsdproxy.container_port: "{{ calligra_tailscale_port }}"   
+      net.unraid.docker.managed: dockerman
+      net.unraid.docker.webui: http://[IP]:[PORT:3123]
+      net.unraid.docker.icon: https://github.com/nicolargo/glances/raw/master/glances/outputs/static/images/glances.png 
+    volumes:
+      - "{{ appdata_path }}/simple-links/config/config.yml:/usr/src/app/config.yml:ro"
+      - "{{ appdata_path }}/simple-links/config/public:/usr/src/app/public:rw"
+    ports:
+      - 3123:3000

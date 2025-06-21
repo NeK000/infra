@@ -1,0 +1,17 @@
+# services:
+#   glance:
+#     container_name: glance
+#     image: glanceapp/glance
+#     restart: always
+#     labels:
+#       tsdproxy.enable: "true"
+#       tsdproxy.name: "news"
+#       tsdproxy.ephemeral: "true"
+#       tsdproxy.container_port: {{ glance_tailscale_port }}
+#       net.unraid.docker.managed: dockerman
+#       net.unraid.docker.webui: http://[IP]:[PORT:{{ glance_tailscale_port }}]
+#       net.unraid.docker.icon: https://github.com/nicolargo/glances/raw/master/glances/outputs/static/images/glances.png
+#     volumes:
+#       - "{{ appdata_path }}/glance-config:/app/config"
+#     ports:
+#       - {{ glance_tailscale_port }}:8080

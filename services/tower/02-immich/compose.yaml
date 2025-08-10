@@ -3,6 +3,8 @@ services:
     image: ghcr.io/imagegenius/immich:latest
     container_name: Immich_Application
     environment:
+      - NVIDIA_VISIBLE_DEVICES=all
+      - NVIDIA_DRIVER_CAPABILITIES=all
       - HOST_OS=Unraid
       - HOST_HOSTNAME=Tower
       - HOST_CONTAINERNAME=immich
@@ -40,9 +42,9 @@ services:
         reservations:
           devices:
             - driver: nvidia
-              count: all  # Use all available GPUs
+              count: all
               capabilities: [gpu]
-
+    runtime: nvidia
 
   postgresql_immich:
     image: tensorchord/pgvecto-rs:pg16-v0.3.0

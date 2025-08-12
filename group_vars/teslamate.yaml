@@ -1,0 +1,10 @@
+---
+
+host_timezone: "Europe/Copenhagen"
+appdata_path: /mnt/user/appdata
+appdata_path_server: /mnt/user/appdata/tower
+
+# ironicbadger.docker_compose_generator
+docker_compose_generator_uid: "1000"
+docker_compose_generator_gid: "1000"
+docker_compose_generator_output_path: "/mnt/user/appdata/deployments/teslamate"

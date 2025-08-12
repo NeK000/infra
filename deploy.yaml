@@ -1,9 +1,29 @@
 ---
-  - hosts: tower
+  - hosts: all
     gather_facts: no
     vars_files:
     - 'group_vars/vault.yaml'
     - 'group_vars/tower.yaml'
+    roles:
+      - role: ironicbadger.docker-compose-generator
+    vars:
+      ansible_become_password: "{{ password }}"
+
+  - hosts: immich
+    gather_facts: no
+    vars_files:
+    - 'group_vars/vault.yaml'
+    - 'group_vars/immich.yaml'
+    roles:
+      - role: ironicbadger.docker-compose-generator
+    vars:
+      ansible_become_password: "{{ password }}"
+
+  - hosts: teslamate
+    gather_facts: no
+    vars_files:
+    - 'group_vars/vault.yaml'
+    - 'group_vars/teslamate.yaml'
     roles:
       - role: ironicbadger.docker-compose-generator
     vars:

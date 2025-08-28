@@ -1,5 +1,25 @@
 ---
-  - hosts: all
+  - hosts: network
+    gather_facts: no
+    vars_files:
+    - 'group_vars/vault.yaml'
+    - 'group_vars/network.yaml'
+    roles:
+      - role: ironicbadger.docker-compose-generator
+    vars:
+      ansible_become_password: "{{ password }}"
+
+  - hosts: llama
+    gather_facts: no
+    vars_files:
+    - 'group_vars/vault.yaml'
+    - 'group_vars/llama.yaml'
+    roles:
+      - role: ironicbadger.docker-compose-generator
+    vars:
+      ansible_become_password: "{{ password }}"
+
+  - hosts: tower
     gather_facts: no
     vars_files:
     - 'group_vars/vault.yaml'

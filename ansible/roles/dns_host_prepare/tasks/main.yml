@@ -1,0 +1,29 @@
+---
+- name: Check resolver file
+  ansible.builtin.stat:
+    path: /etc/resolv.conf
+  register: dns_host_resolv_conf_stat
+
+- name: Remove systemd-resolved stub resolver symlink
+  ansible.builtin.file:
+    path: /etc/resolv.conf
+    state: absent
+  when: dns_host_resolv_conf_stat.stat.islnk | default(false)
+
+- name: Configure host resolver for bootstrap and upstream lookups
+  ansible.builtin.copy:
+    dest: /etc/resolv.conf
+    content: |
+      search {{ dns_host_search_domain }}
+      nameserver {{ dns_host_upstream_resolver }}
+    owner: root
+    group: root
+    mode: "0644"
+
+- name: Stop systemd-resolved so AdGuard can bind port 53
+  ansible.builtin.systemd:
+    name: systemd-resolved
+    state: stopped
+    enabled: false
+    masked: true
+  failed_when: false

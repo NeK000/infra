@@ -1,0 +1,138 @@
+---
+services:
+  teslamate-postgres:
+    build:
+      context: ./postgres
+      dockerfile: Dockerfile
+      args:
+        PG_MAJOR: "18"
+    restart: unless-stopped
+    networks:
+      - teslamate-stack
+    environment:
+      TZ: ${TIMEZONE}
+      POSTGRES_PASSWORD: ${TESLAMATE_PG_PASS}
+      POSTGRES_USER: ${TESLAMATE_PG_USER}
+      POSTGRES_DB: ${TESLAMATE_PG_DB}
+      PGBACKREST_FULL_BACKUP_INTERVAL_SECONDS: ${TESLAMATE_PGBACKREST_FULL_BACKUP_INTERVAL_SECONDS}
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${TESLAMATE_PG_USER} -d ${TESLAMATE_PG_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+    volumes:
+      - ./postgres-data:/var/lib/postgresql
+      - ./pgbackrest:/etc/pgbackrest
+      - ./pgbackrest:/var/lib/pgbackrest
+    command:
+      - postgres
+      - -c
+      - wal_level=replica
+      - -c
+      - archive_mode=on
+      - -c
+      - archive_command=pgbackrest --stanza=main archive-push %p
+
+  teslamate-teslamate:
+    image: teslamate/teslamate:3.0.0
+    restart: unless-stopped
+    networks:
+      - teslamate-stack
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./import:/opt/app/import
+    environment:
+      ENCRYPTION_KEY: "${TESLAMATE_ENCRYPTION_KEY}"
+      DATABASE_USER: "${TESLAMATE_PG_USER}"
+      DATABASE_PASS: "${TESLAMATE_PG_PASS}"
+      DATABASE_NAME: "${TESLAMATE_PG_DB}"
+      DATABASE_HOST: "teslamate-postgres"
+      MQTT_HOST: "${MQTT_HOST}"
+      MQTT_USERNAME: "${MQTT_USERNAME}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD}"
+      PORT: "4000"
+    cap_drop:
+      - all
+    depends_on:
+      teslamate-postgres:
+        condition: service_healthy
+    labels:
+      homepage.group: Services
+      homepage.name: TeslaMate
+      homepage.href: http://teslamate-app.ninik.lab/
+      homepage.description: Tesla vehicle dashboard
+      traefik.enable: "true"
+      traefik.docker.network: teslamate-stack
+      traefik.http.routers.teslamate.rule: Host(`teslamate-app.ninik.lab`)
+      traefik.http.routers.teslamate.entrypoints: web
+      traefik.http.services.teslamate.loadbalancer.server.port: "4000"
+
+  teslamate-grafana:
+    image: teslamate/grafana:3.0.0
+    restart: unless-stopped
+    networks:
+      - teslamate-stack
+    ports:
+      - "3000:3000"
+    volumes:
+      - ./grafana-data:/var/lib/grafana
+    environment:
+      DATABASE_USER: "${TESLAMATE_PG_USER}"
+      DATABASE_PASS: "${TESLAMATE_PG_PASS}"
+      DATABASE_NAME: "${TESLAMATE_PG_DB}"
+      DATABASE_HOST: "teslamate-postgres"
+      GF_SECURITY_ADMIN_USER: "${TESLAMATE_GRAFANA_USER}"
+      GF_SECURITY_ADMIN_PASSWORD: "${TESLAMATE_GRAFANA_PASSWORD}"
+      PUID: "472"
+      PGID: "472"
+    depends_on:
+      teslamate-postgres:
+        condition: service_healthy
+    labels:
+      homepage.group: Services
+      homepage.name: TeslaMate Grafana
+      homepage.href: http://teslamate-grafana.ninik.lab/
+      homepage.description: TeslaMate Grafana dashboards
+      traefik.enable: "true"
+      traefik.docker.network: teslamate-stack
+      traefik.http.routers.teslamate-grafana.rule: Host(`teslamate-grafana.ninik.lab`)
+      traefik.http.routers.teslamate-grafana.entrypoints: web
+      traefik.http.services.teslamate-grafana.loadbalancer.server.port: "3000"
+
+  teslamate-abrp:
+    image: fetzu/teslamate-abrp:3.4.0
+    restart: unless-stopped
+    networks:
+      - teslamate-stack
+    environment:
+      MQTT_SERVER: "${MQTT_HOST}"
+      MQTT_USERNAME: "${MQTT_USERNAME}"
+      MQTT_PASSWORD: "${MQTT_PASSWORD}"
+      USER_TOKEN: "${TESLAMATE_ABRP_KEY}"
+      CAR_NUMBER: "${TESLAMATE_ABRP_CAR_NUMBER}"
+      CAR_MODEL: "${TESLAMATE_ABRP_CAR_MODEL}"
+
+  teslamate-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    restart: unless-stopped
+    ports:
+      - "2375:2375"
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      POST: "0"
+      SERVICES: "0"
+      TASKS: "0"
+      VERSION: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  teslamate-stack:
+    name: teslamate-stack

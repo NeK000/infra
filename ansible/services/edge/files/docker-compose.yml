@@ -1,0 +1,84 @@
+---
+services:
+  traefik:
+    image: traefik:v3.6.13
+    restart: unless-stopped
+    ports:
+      - "80:80"
+    volumes:
+      - ./traefik/traefik.yml:/etc/traefik/traefik.yml:ro
+      - ./traefik/dynamic:/etc/traefik/dynamic:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./traefik/logs:/var/log/traefik
+    networks:
+      - edge-stack
+    labels:
+      edge.stack.traefik-config-sha: ${TRAEFIK_CONFIG_SHA}
+      traefik.enable: "true"
+      traefik.docker.network: edge-stack
+      traefik.http.routers.traefik-dashboard.rule: Host(`${TRAEFIK_OWN_DOMAIN:?required}`) && (PathPrefix(`/api`) || PathPrefix(`/dashboard`))
+      traefik.http.routers.traefik-dashboard.entrypoints: web
+      traefik.http.routers.traefik-dashboard.service: api@internal
+      traefik.http.routers.traefik-dashboard.priority: "200"
+
+  homepage:
+    image: ghcr.io/gethomepage/homepage:v1.12.3
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+      HOMEPAGE_ALLOWED_HOSTS: ${LOCAL_HOMEPAGE_DOMAIN:?required}
+    volumes:
+      - ./homepage/config:/app/config
+      - ./homepage/data:/app/public/images
+    networks:
+      - edge-stack
+    depends_on:
+      - edge-socket-proxy
+    labels:
+      edge.stack.homepage-config-sha: ${HOMEPAGE_CONFIG_SHA}
+      traefik.enable: "true"
+      traefik.docker.network: edge-stack
+      traefik.http.routers.homepage.rule: Host(`${LOCAL_HOMEPAGE_DOMAIN:?required}`)
+      traefik.http.routers.homepage.entrypoints: web
+      traefik.http.services.homepage.loadbalancer.server.port: "3000"
+      tsdproxy.enable: "false"
+
+  tsdproxy:
+    image: almeidapaulopt/tsdproxy:1.4.7
+    restart: unless-stopped
+    environment:
+      TZ: ${TIMEZONE}
+    volumes:
+      - ./tsdproxy/config:/config
+      - ./tsdproxy/data:/data
+      - ./tsdproxy/secrets/tailscale-authkey:/run/secrets/tailscale_authkey:ro
+    networks:
+      - edge-stack
+    depends_on:
+      - edge-socket-proxy
+    labels:
+      edge.stack.tsdproxy-config-sha: ${TSDPROXY_CONFIG_SHA}
+      edge.stack.tsdproxy-authkey-sha: ${TSDPROXY_AUTHKEY_SHA}
+      tsdproxy.enable: "false"
+
+  edge-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    restart: unless-stopped
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      POST: "0"
+      SERVICES: "1"
+      TASKS: "1"
+      VERSION: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    networks:
+      - edge-stack
+
+networks:
+  edge-stack:
+    name: edge-stack

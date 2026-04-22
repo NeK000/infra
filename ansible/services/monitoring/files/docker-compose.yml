@@ -1,0 +1,110 @@
+---
+services:
+  unraid-sleeper-host:
+    image: alpine:3.22
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - "sleep infinity"
+    environment:
+      TZ: ${TIMEZONE}
+    labels:
+      - "homepage.group=Infrastructure"
+      - "homepage.name=NAS"
+      - "homepage.href=${UNRAID_URL:-}"
+      - "homepage.showStats=false"
+      - "homepage.widgets[0].type=unraid"
+      - "homepage.widgets[0].url=${UNRAID_URL:-}"
+      - "homepage.widgets[0].key=${UNRAID_API_KEY:-}"
+      - "homepage.widgets[0].pool1=${UNRAID_POOL1:-}"
+      - 'homepage.widgets[0].fields=["cpu","memoryPercent","memoryAvailable","memoryUsed"]'
+      - "homepage.widgets[1].type=unraid"
+      - "homepage.widgets[1].url=${UNRAID_URL:-}"
+      - "homepage.widgets[1].key=${UNRAID_API_KEY:-}"
+      - "homepage.widgets[1].pool1=${UNRAID_POOL1:-}"
+      - 'homepage.widgets[1].fields=["arrayFree","arrayUsedSpace","arrayUsedPercent","status"]'
+      - "homepage.widgets[2].type=unraid"
+      - "homepage.widgets[2].url=${UNRAID_URL:-}"
+      - "homepage.widgets[2].key=${UNRAID_API_KEY:-}"
+      - "homepage.widgets[2].pool1=${UNRAID_POOL1:-}"
+      - 'homepage.widgets[2].fields=["pool1UsedSpace","pool1FreeSpace","pool1UsedPercent","notifications"]'
+  pbs-sleeper-host:
+    image: alpine:3.22
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - "sleep infinity"
+    environment:
+      TZ: ${TIMEZONE}
+    labels:
+      - "homepage.group=Infrastructure"
+      - "homepage.name=Proxmox Backup Server"
+      - "homepage.href=${PBS_URL:-}"
+      - "homepage.showStats=false"
+      - "homepage.widget.type=proxmoxbackupserver"
+      - "homepage.widget.url=${PBS_URL:-}"
+      - "homepage.widget.username=${PBS_USERNAME:-}"
+      - "homepage.widget.password=${PBS_PASSWORD:-}"
+  pve2-sleeper-host:
+    image: alpine:3.22
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - "sleep infinity"
+    environment:
+      TZ: ${TIMEZONE}
+    labels:
+      - "homepage.group=Infrastructure"
+      - "homepage.name=PVE 2"
+      - "homepage.href=${PVE2_URL:-}"
+      - "homepage.showStats=false"
+      - "homepage.widget.type=proxmox"
+      - "homepage.widget.url=${PVE2_URL:-}"
+      - "homepage.widget.username=${PVE2_USERNAME:-}"
+      - "homepage.widget.password=${PVE2_PASSWORD:-}"
+      - "homepage.widget.node=pve2"
+  homeassistant-sleeper-host:
+    image: alpine:3.22
+    restart: unless-stopped
+    command:
+      - /bin/sh
+      - -c
+      - "sleep infinity"
+    environment:
+      TZ: ${TIMEZONE}
+    labels:
+      - "homepage.group=Services"
+      - "homepage.name=Home Assistant"
+      - "homepage.href=${HOME_ASSISTANT_URL:-}"
+      - "homepage.showStats=false"
+      - "homepage.widget.type=homeassistant"
+      - "homepage.widget.url=${HOME_ASSISTANT_URL:-}"
+      - "homepage.widget.key=${HOME_ASSISTANT_ACCESS_TOKEN:-}"
+      - "homepage.widget.custom[0].state=sensor.server_kontakt_power"
+      - "homepage.widget.custom[0].label=Rack"
+      - "homepage.widget.custom[1].state=sensor.kontakt_pve2_power"
+      - "homepage.widget.custom[1].label=PVE 2"
+      - "homepage.widget.custom[2].state=sensor.server_kontakt_power"
+      - "homepage.widget.custom[2].label=Rack"
+      - "homepage.widget.custom[3].state=sensor.kontakt_pve2_power"
+      - "homepage.widget.custom[3].label=PVE 2"
+  monitoring-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    restart: unless-stopped
+    ports:
+      - "2375:2375"
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      POST: "0"
+      SERVICES: "0"
+      TASKS: "0"
+      VERSION: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,4 @@
+---
+dns_host_search_domain: "{{ IP_SEARCH_DOMAIN | default('ninik.lab') }}"
+dns_host_upstream_resolver: "{{ IP_GATEWAY | default('10.50.10.1') }}"
+

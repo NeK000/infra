@@ -1,0 +1,183 @@
+---
+- name: Validate compose stack inputs
+  ansible.builtin.assert:
+    that:
+      - compose_stack_name | length > 0
+      - compose_stack_dest_dir | length > 0
+      - compose_stack_project_name | length > 0
+    fail_msg: Set compose_stack_name, compose_stack_project_name, and compose_stack_dest_dir before using compose_stack.
+
+- name: Check local stack directory
+  ansible.builtin.stat:
+    path: "{{ compose_stack_local_service_dir }}"
+  delegate_to: localhost
+  become: false
+  register: compose_stack_local_service_dir_stat
+
+- name: Check local static files directory
+  ansible.builtin.stat:
+    path: "{{ compose_stack_local_files_dir }}"
+  delegate_to: localhost
+  become: false
+  register: compose_stack_local_files_dir_stat
+
+- name: Check local templates directory
+  ansible.builtin.stat:
+    path: "{{ compose_stack_local_templates_dir }}"
+  delegate_to: localhost
+  become: false
+  register: compose_stack_local_templates_dir_stat
+
+- name: Assert stack definition exists
+  ansible.builtin.assert:
+    that:
+      - compose_stack_local_service_dir_stat.stat.exists
+      - compose_stack_local_service_dir_stat.stat.isdir
+      - compose_stack_local_files_dir_stat.stat.exists or compose_stack_local_templates_dir_stat.stat.exists
+    fail_msg: "Expected services/{{ compose_stack_name }}/files and/or services/{{ compose_stack_name }}/templates in the repo."
+
+- name: Check for existing deployed compose file
+  ansible.builtin.stat:
+    path: "{{ compose_stack_dest_dir }}/{{ compose_stack_compose_files[0] }}"
+  register: compose_stack_existing_compose_file_stat
+
+- name: Remove existing deployed compose stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_stack_dest_dir }}"
+    files: "{{ compose_stack_compose_files }}"
+    remove_orphans: true
+    state: absent
+  when: compose_stack_existing_compose_file_stat.stat.exists
+
+- name: Find local template files
+  ansible.builtin.find:
+    paths: "{{ compose_stack_local_templates_dir }}"
+    recurse: true
+    file_type: file
+    hidden: true
+  delegate_to: localhost
+  become: false
+  register: compose_stack_template_files
+  when: compose_stack_local_templates_dir_stat.stat.exists
+
+- name: Create compose stack directories
+  ansible.builtin.file:
+    path: "{{ item }}"
+    state: directory
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_directory_mode }}"
+  loop: "{{ [compose_stack_dest_dir] + compose_stack_directories }}"
+
+- name: Create compose stack directories with custom ownership
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: directory
+    owner: "{{ item.owner | default(compose_stack_owner) }}"
+    group: "{{ item.group | default(compose_stack_group) }}"
+    mode: "{{ item.mode | default(compose_stack_directory_mode) }}"
+  loop: "{{ compose_stack_directory_specs }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Copy static stack files
+  ansible.builtin.copy:
+    src: "{{ compose_stack_local_files_dir }}/"
+    dest: "{{ compose_stack_dest_dir }}/"
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_static_files_mode }}"
+  when: compose_stack_local_files_dir_stat.stat.exists
+
+- name: Create parent directories for templated stack files
+  ansible.builtin.file:
+    path: "{{ compose_stack_dest_dir }}/{{ template_relative_path | dirname }}"
+    state: directory
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_directory_mode }}"
+  loop: "{{ compose_stack_template_files.files | default([]) }}"
+  loop_control:
+    label: "{{ template_relative_path }}"
+  vars:
+    template_relative_path: >-
+      {{ item.path | replace(compose_stack_local_templates_dir ~ '/', '') | regex_replace('\.j2$', '') }}
+  when:
+    - compose_stack_local_templates_dir_stat.stat.exists
+    - (compose_stack_template_files.files | default([])) | length > 0
+
+- name: Render templated stack files
+  ansible.builtin.template:
+    src: "{{ item.path }}"
+    dest: "{{ compose_stack_dest_dir }}/{{ template_relative_path }}"
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_template_modes[template_relative_path] | default(compose_stack_template_default_mode) }}"
+  loop: "{{ compose_stack_template_files.files | default([]) }}"
+  loop_control:
+    label: "{{ template_relative_path }}"
+  vars:
+    template_relative_path: >-
+      {{ item.path | replace(compose_stack_local_templates_dir ~ '/', '') | regex_replace('\.j2$', '') }}
+  when:
+    - compose_stack_local_templates_dir_stat.stat.exists
+    - (compose_stack_template_files.files | default([])) | length > 0
+
+- name: Ensure parent directories for managed files exist
+  ansible.builtin.file:
+    path: "{{ item.path | dirname }}"
+    state: directory
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_directory_mode }}"
+  loop: "{{ compose_stack_managed_files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Ensure managed files exist
+  ansible.builtin.file:
+    path: "{{ item.path }}"
+    state: touch
+    owner: "{{ item.owner | default(compose_stack_owner) }}"
+    group: "{{ item.group | default(compose_stack_group) }}"
+    mode: "{{ item.mode | default(compose_stack_managed_file_default_mode) }}"
+    access_time: preserve
+    modification_time: preserve
+  loop: "{{ compose_stack_managed_files }}"
+  loop_control:
+    label: "{{ item.path }}"
+
+- name: Ensure parent directories for secret files exist
+  ansible.builtin.file:
+    path: "{{ item.dest | dirname }}"
+    state: directory
+    owner: "{{ compose_stack_owner }}"
+    group: "{{ compose_stack_group }}"
+    mode: "{{ compose_stack_secret_directory_mode }}"
+  loop: "{{ compose_stack_secret_files }}"
+  loop_control:
+    label: "{{ item.dest }}"
+
+- name: Render secret files
+  ansible.builtin.copy:
+    content: "{{ item.content }}"
+    dest: "{{ item.dest }}"
+    owner: "{{ item.owner | default(compose_stack_owner) }}"
+    group: "{{ item.group | default(compose_stack_group) }}"
+    mode: "{{ item.mode | default(compose_stack_secret_file_default_mode) }}"
+  loop: "{{ compose_stack_secret_files }}"
+  loop_control:
+    label: "{{ item.dest }}"
+  no_log: true
+
+- name: Deploy compose stack
+  community.docker.docker_compose_v2:
+    project_src: "{{ compose_stack_dest_dir }}"
+    project_name: "{{ compose_stack_project_name }}"
+    files: "{{ compose_stack_compose_files }}"
+    pull: "{{ compose_stack_pull_policy }}"
+    recreate: always
+    remove_orphans: true
+    state: present
+    wait: true
+    wait_timeout: "{{ compose_stack_wait_timeout }}"

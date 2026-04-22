@@ -1,0 +1,24 @@
+---
+http:
+  routers:
+{% for remote_service in remote_http_services | default([]) %}
+{% set service_id = remote_service.traefik_name | default(remote_service.domain | regex_replace('[^A-Za-z0-9-]', '-')) %}
+    {{ service_id }}:
+      rule: "Host(`{{ remote_service.domain }}`)"
+      entryPoints:
+        - {{ remote_service.entrypoint | default('web') }}
+      service: {{ service_id }}
+{% if remote_service.priority is defined %}
+      priority: {{ remote_service.priority }}
+{% endif %}
+{% endfor %}
+
+  services:
+{% for remote_service in remote_http_services | default([]) %}
+{% set service_id = remote_service.traefik_name | default(remote_service.domain | regex_replace('[^A-Za-z0-9-]', '-')) %}
+    {{ service_id }}:
+      loadBalancer:
+        passHostHeader: {{ remote_service.pass_host_header | default(true) | ternary('true', 'false') }}
+        servers:
+          - url: "{{ remote_service.scheme | default('http') }}://{{ remote_service.host }}:{{ remote_service.port }}"
+{% endfor %}

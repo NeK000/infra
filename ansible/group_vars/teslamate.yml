@@ -1,0 +1,37 @@
+---
+teslamate_base_dir: /opt/teslamate
+
+compose_stack_name: teslamate
+compose_stack_project_name: teslamate
+compose_stack_dest_dir: "{{ teslamate_base_dir }}"
+compose_stack_owner: root
+compose_stack_group: root
+compose_stack_directories:
+  - "{{ teslamate_base_dir }}/import"
+  - "{{ teslamate_base_dir }}/postgres"
+  - "{{ teslamate_base_dir }}/postgres-data"
+  - "{{ teslamate_base_dir }}/pgbackrest"
+compose_stack_directory_specs:
+  - path: "{{ teslamate_base_dir }}/grafana-data"
+    owner: "472"
+    group: "472"
+compose_stack_template_modes:
+  ".env": "0640"
+  "pgbackrest/pgbackrest.conf": "0640"
+
+TESLAMATE_ENCRYPTION_KEY: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ENCRYPTION_KEY') | default(undef('Missing env var: TESLAMATE_ENCRYPTION_KEY'), true) }}"
+TESLAMATE_GRAFANA_USER: "{{ lookup('ansible.builtin.env', 'TESLAMATE_GRAFANA_USER') | default(undef('Missing env var: TESLAMATE_GRAFANA_USER'), true) }}"
+TESLAMATE_GRAFANA_PASSWORD: "{{ lookup('ansible.builtin.env', 'TESLAMATE_GRAFANA_PASSWORD') | default(undef('Missing env var: TESLAMATE_GRAFANA_PASSWORD'), true) }}"
+TESLAMATE_ABRP_KEY: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ABRP_KEY') | default(undef('Missing env var: TESLAMATE_ABRP_KEY'), true) }}"
+TESLAMATE_ABRP_CAR_NUMBER: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ABRP_CAR_NUMBER') | default(undef('Missing env var: TESLAMATE_ABRP_CAR_NUMBER'), true) }}"
+TESLAMATE_ABRP_CAR_MODEL: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ABRP_CAR_MODEL') | default(undef('Missing env var: TESLAMATE_ABRP_CAR_MODEL'), true) }}"
+
+TESLAMATE_PG_USER: "{{ lookup('ansible.builtin.env', 'TESLAMATE_PG_USER') | default('teslamate', true) }}"
+TESLAMATE_PG_PASS: "{{ lookup('ansible.builtin.env', 'TESLAMATE_PG_PASS') | default(undef('Missing env var: TESLAMATE_PG_PASS'), true) }}"
+TESLAMATE_PG_DB: "{{ lookup('ansible.builtin.env', 'TESLAMATE_PG_DB') | default('teslamate', true) }}"
+TESLAMATE_PGBACKREST_RETENTION_FULL: "{{ lookup('ansible.builtin.env', 'TESLAMATE_PGBACKREST_RETENTION_FULL') | default('7', true) }}"
+TESLAMATE_PGBACKREST_FULL_BACKUP_INTERVAL_SECONDS: "{{ lookup('ansible.builtin.env', 'TESLAMATE_PGBACKREST_FULL_BACKUP_INTERVAL_SECONDS') | default('86400', true) }}"
+
+MQTT_HOST: "{{ lookup('ansible.builtin.env', 'MQTT_HOST') | default(undef('Missing env var: MQTT_HOST'), true) }}"
+MQTT_USERNAME: "{{ lookup('ansible.builtin.env', 'MQTT_USERNAME') | default(undef('Missing env var: MQTT_USERNAME'), true) }}"
+MQTT_PASSWORD: "{{ lookup('ansible.builtin.env', 'MQTT_PASSWORD') | default(undef('Missing env var: MQTT_PASSWORD'), true) }}"

@@ -1,0 +1,47 @@
+---
+### SERVERS
+  - hosts: pve2
+    roles:
+      - role: packages
+
+  - hosts: pbs
+    roles:
+      - role: packages
+
+  - hosts: aiml
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+
+  - hosts: edge
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+      - role: compose_stack
+
+  - hosts: dns
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+      - role: dns_host_prepare
+      - role: compose_stack
+      - role: adguard_config
+        tags:
+          - dns_rewrites
+
+  - hosts: monitoring
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+      - role: compose_stack
+
+  - hosts: teslamate
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+      - role: compose_stack
+
+  - hosts: test
+    roles:
+      - role: packages
+      - role: geerlingguy.docker

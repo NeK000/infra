@@ -1,0 +1,45 @@
+---
+common_packages:
+  - tmux
+  - btop
+  - curl
+  - htop
+  - ca-certificates
+
+timezone: Europe/Copenhagen
+
+##### Static network settings
+IP_NAS: "10.50.10.2"
+IP_PBS: "10.50.10.3"
+IP_PVE2: "10.50.10.10"
+IP_EDGE: "10.50.10.210"
+IP_TESLAMATE: "10.50.10.211"
+IP_DNS: "10.50.10.212"
+IP_MONITORING: "10.50.10.213"
+IP_TOWER: "10.10.1.20"
+IP_FAT_LADY: "10.10.1.20"
+IP_HOMEASSISTANT: "10.10.1.31"
+
+##### Variables provided by Doppler
+EDGE_TAILSCALE_AUTHKEY: "{{ lookup('ansible.builtin.env', 'EDGE_TAILSCALE_AUTHKEY') | default(undef('Missing env var: EDGE_TAILSCALE_AUTHKEY'), true) }}"
+###Adguard
+ADGUARD_USERNAME: "{{ lookup('ansible.builtin.env', 'ADGUARD_USERNAME') | default(undef('Missing env var: ADGUARD_USERNAME'), true) }}"
+ADGUARD_PASSWORD: "{{ lookup('ansible.builtin.env', 'ADGUARD_PASSWORD') | default(undef('Missing env var: ADGUARD_PASSWORD'), true) }}"
+###Unifi
+UNIFI_URL: "{{ lookup('ansible.builtin.env', 'UNIFI_URL') | default('', true) }}"
+UNIFI_API_KEY: "{{ lookup('ansible.builtin.env', 'UNIFI_API_KEY') | default('', true) }}"
+###Unraid
+UNRAID_URL: "{{ lookup('ansible.builtin.env', 'UNRAID_URL') | default('', true) }}"
+UNRAID_API_KEY: "{{ lookup('ansible.builtin.env', 'UNRAID_API_KEY') | default('', true) }}"
+UNRAID_POOL1: "{{ lookup('ansible.builtin.env', 'UNRAID_POOL1') | default('', true) }}"
+###Proxmox Backup Server
+PBS_URL: "{{ lookup('ansible.builtin.env', 'PBS_URL') | default('', true) }}"
+PBS_USERNAME: "{{ lookup('ansible.builtin.env', 'PBS_USERNAME') | default('', true) }}"
+PBS_PASSWORD: "{{ lookup('ansible.builtin.env', 'PBS_PASSWORD') | default('', true) }}"
+###Proxmox  PVE 2
+PVE2_URL: "{{ lookup('ansible.builtin.env', 'PVE2_URL') | default('', true) }}"
+PVE2_USERNAME: "{{ lookup('ansible.builtin.env', 'PVE2_USERNAME') | default('', true) }}"
+PVE2_PASSWORD: "{{ lookup('ansible.builtin.env', 'PVE2_PASSWORD') | default('', true) }}"
+###Home Assistant
+HOME_ASSISTANT_URL: "{{ lookup('ansible.builtin.env', 'HOME_ASSISTANT_URL') | default('', true) }}"
+HOME_ASSISTANT_ACCESS_TOKEN: "{{ lookup('ansible.builtin.env', 'HOME_ASSISTANT_ACCESS_TOKEN') | default('', true) }}"

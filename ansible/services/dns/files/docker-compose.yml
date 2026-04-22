@@ -1,0 +1,48 @@
+---
+services:
+  adguard:
+    image: adguard/adguardhome:latest
+    container_name: adguard
+    restart: always
+    labels:
+      homepage.group: Infrastructure
+      homepage.name: AdGuard
+      homepage.href: http://dns.ninik.lab/
+      homepage.description: AdGuard DNS server
+      homepage.widget.type: adguard
+      homepage.widget.url: http://dns.ninik.lab/
+      homepage.widget.username: ${ADGUARD_USERNAME}
+      homepage.widget.password: ${ADGUARD_PASSWORD}
+    ports:
+      - "53:53/udp"
+      - "53:53/tcp"
+      - "80:80"
+      - "3000:3000"
+    environment:
+      TZ: ${TIMEZONE}
+    volumes:
+      - ./workdir:/opt/adguardhome/work
+      - ./configdir:/opt/adguardhome/conf
+    healthcheck:
+      test: [ "CMD", "pgrep", "-f", "adguardhome" ]
+      interval: 1m
+      timeout: 10s
+      retries: 3
+      start_period: 30s
+  edge-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    restart: unless-stopped
+    ports:
+      - "2375:2375"
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      POST: "0"
+      SERVICES: "0"
+      TASKS: "0"
+      VERSION: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro

@@ -1,0 +1,6 @@
+rewrites:
+{% for entry in dns_rewrite_entries %}
+  - domain: {{ entry.domain }}
+    answer: {{ entry.answer }}
+    enabled: {{ (entry.enabled | default(true)) | bool | lower }}
+{% endfor %}

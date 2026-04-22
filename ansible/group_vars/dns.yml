@@ -1,0 +1,59 @@
+---
+dns_base_dir: /opt/dns
+dns_work_dir: "{{ dns_base_dir }}/workdir"
+dns_config_dir: "{{ dns_base_dir }}/configdir"
+
+dns_rewrite_entries:
+  - domain: teslamate.ninik.lab
+    answer: "{{ IP_TESLAMATE }}"
+  - domain: teslamate-app.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: teslamate-grafana.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: dns.ninik.lab
+    answer: "{{ IP_DNS }}"
+  - domain: edge.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: homepage.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: homeassistant.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: traefik.ninik.lab
+    answer: "{{ IP_EDGE }}"
+  - domain: nas.local
+    answer: "{{ IP_NAS }}"
+  - domain: tower.local
+    answer: "{{ IP_TOWER }}"
+  - domain: fat-lady.internal
+    answer: "{{ IP_FAT_LADY }}"
+  - domain: homeassistant.local
+    answer: "{{ IP_HOMEASSISTANT }}"
+  - domain: monitoring.ninik.lab
+    answer: "{{ IP_MONITORING }}"
+  - domain: nas.ninik.lab
+    answer: "{{ IP_NAS }}"
+  - domain: pbs.ninik.lab
+    answer: "{{ IP_PBS }}"
+  - domain: pve2.ninik.lab
+    answer: "{{ IP_PVE2 }}"
+
+adguard_api_scheme: http
+adguard_api_host: "{{ IP_DNS }}"
+adguard_api_port: 80
+adguard_bootstrap_port: 3000
+adguard_web_bind_ip: 0.0.0.0
+adguard_web_port: 80
+adguard_dns_bind_ip: 0.0.0.0
+adguard_dns_port: 53
+
+compose_stack_name: dns
+compose_stack_project_name: dns
+compose_stack_dest_dir: "{{ dns_base_dir }}"
+compose_stack_owner: root
+compose_stack_group: root
+compose_stack_directories:
+  - "{{ dns_work_dir }}"
+  - "{{ dns_config_dir }}"
+compose_stack_template_modes:
+  "configdir/AdGuardHome.yaml": "0600"
+  ".env": "0644"

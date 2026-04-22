@@ -1,0 +1,60 @@
+---
+# TODO: vault this secret before the first real deployment.
+edge_base_dir: /opt/edge
+
+compose_stack_name: edge
+compose_stack_project_name: edge
+compose_stack_dest_dir: "{{ edge_base_dir }}"
+compose_stack_owner: root
+compose_stack_group: root
+compose_stack_directories:
+  - "{{ edge_base_dir }}/traefik"
+  - "{{ edge_base_dir }}/traefik/dynamic"
+  - "{{ edge_base_dir }}/traefik/logs"
+  - "{{ edge_base_dir }}/homepage"
+  - "{{ edge_base_dir }}/homepage/config"
+  - "{{ edge_base_dir }}/homepage/data"
+  - "{{ edge_base_dir }}/tsdproxy"
+  - "{{ edge_base_dir }}/tsdproxy/config"
+  - "{{ edge_base_dir }}/tsdproxy/data"
+  - "{{ edge_base_dir }}/tsdproxy/secrets"
+compose_stack_secret_files:
+  - dest: "{{ edge_base_dir }}/tsdproxy/secrets/tailscale-authkey"
+    content: "{{ EDGE_TAILSCALE_AUTHKEY }}"
+    mode: "{{compose_stack_secret_file_default_mode}}"
+compose_stack_template_modes:
+  ".env": "0640"
+
+####### LOCAL domains
+local_traefik_domain: traefik.ninik.lab
+LOCAL_HOMEPAGE_DOMAIN: homepage.ninik.lab
+docker_hosts:
+  - name: DNS
+    host: "{{ IP_DNS }}"
+    port: 2375
+    target_hostname: "{{ IP_DNS }}"
+  - name: Monitoring
+    host: "{{ IP_MONITORING }}"
+    port: 2375
+    target_hostname: "{{ IP_MONITORING }}"
+  - name: TeslaMate
+    host: "{{ IP_TESLAMATE }}"
+    port: 2375
+    target_hostname: "{{ IP_TESLAMATE }}"
+  - name: NAS
+    host: "{{ IP_NAS }}"
+    port: 2375
+    target_hostname: "{{ IP_NAS }}"
+remote_http_services:
+  - name: teslamate
+    host: "{{ IP_TESLAMATE }}"
+    port: 4000
+    domain: teslamate-app.ninik.lab
+  - name: teslamate-grafana
+    host: "{{ IP_TESLAMATE }}"
+    port: 3000
+    domain: teslamate-grafana.ninik.lab
+  - name: homeassistant
+    host: "{{ IP_HOMEASSISTANT }}"
+    port: 8123
+    domain: homeassistant.ninik.lab

@@ -1,0 +1,20 @@
+---
+edge-local:
+  host: edge-socket-proxy
+  port: 2375
+{% for docker_host in docker_hosts %}
+{{ docker_host.name }}:
+  host: "{{ docker_host.host }}"
+  port: {{ docker_host.port }}
+{% if docker_host.protocol is defined %}
+  protocol: "{{ docker_host.protocol }}"
+{% endif %}
+{% if docker_host.tls is defined %}
+  tls:
+{{ docker_host.tls | to_nice_yaml(indent=2, sort_keys=False) | indent(4, true) }}
+{% endif %}
+{% if docker_host.headers is defined %}
+  headers:
+{{ docker_host.headers | to_nice_yaml(indent=2, sort_keys=False) | indent(4, true) }}
+{% endif %}
+{% endfor %}

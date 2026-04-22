@@ -1,0 +1,155 @@
+---
+- name: Validate AdGuard inputs
+  ansible.builtin.assert:
+    that:
+      - ADGUARD_USERNAME | length > 0
+      - ADGUARD_PASSWORD | length > 0
+      - dns_rewrite_entries | length > 0
+    fail_msg: Set ADGUARD_USERNAME, ADGUARD_PASSWORD, and dns_rewrite_entries before using adguard_config.
+  no_log: true
+
+- name: Probe AdGuard configured API
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/status"
+    method: GET
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_configured_probe
+  changed_when: false
+  failed_when: false
+  no_log: true
+
+- name: Wait for AdGuard first-run API
+  ansible.builtin.uri:
+    url: "{{ adguard_bootstrap_base_url }}/control/version.json"
+    method: GET
+    follow_redirects: none
+    status_code:
+      - 200
+      - 302
+      - 404
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_bootstrap_probe
+  until: adguard_bootstrap_probe.status in [200, 302, 404]
+  retries: 30
+  delay: 2
+  changed_when: false
+  when: adguard_configured_probe.status | default(0) != 200
+
+- name: Bootstrap AdGuard first-run configuration
+  ansible.builtin.uri:
+    url: "{{ adguard_bootstrap_base_url }}/control/install/configure"
+    method: POST
+    body_format: json
+    body:
+      username: "{{ ADGUARD_USERNAME }}"
+      password: "{{ ADGUARD_PASSWORD }}"
+      web:
+        ip: "{{ adguard_web_bind_ip }}"
+        port: "{{ adguard_web_port }}"
+      dns:
+        ip: "{{ adguard_dns_bind_ip }}"
+        port: "{{ adguard_dns_port }}"
+    status_code:
+      - 200
+      - 400
+      - 403
+      - 404
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_bootstrap_configure
+  changed_when: adguard_bootstrap_configure.status == 200
+  failed_when: false
+  no_log: true
+  when: adguard_configured_probe.status | default(0) != 200
+
+- name: Wait for AdGuard configured API
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/status"
+    method: GET
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_status
+  until: adguard_status.status == 200
+  retries: 30
+  delay: 2
+  changed_when: false
+  no_log: true
+
+- name: Read existing DNS rewrites
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/rewrite/list"
+    method: GET
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_rewrite_list
+  changed_when: false
+  no_log: true
+
+- name: Remove managed DNS rewrites with stale answers
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/rewrite/delete"
+    method: POST
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      domain: "{{ existing_rewrite.domain }}"
+      answer: "{{ existing_rewrite.answer }}"
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  loop: "{{ adguard_rewrite_list.json | default([]) }}"
+  loop_control:
+    loop_var: existing_rewrite
+    label: "{{ existing_rewrite.domain | default('unknown') }}"
+  vars:
+    managed_rewrite: "{{ dns_rewrite_entries | selectattr('domain', 'equalto', existing_rewrite.domain | default('')) | first | default({}) }}"
+  when:
+    - managed_rewrite | length > 0
+    - existing_rewrite.answer | default('') != managed_rewrite.answer
+  no_log: true
+
+- name: Read DNS rewrites after cleanup
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/rewrite/list"
+    method: GET
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  register: adguard_rewrite_list_after_cleanup
+  changed_when: false
+  no_log: true
+
+- name: Add missing DNS rewrites
+  ansible.builtin.uri:
+    url: "{{ adguard_api_base_url }}/control/rewrite/add"
+    method: POST
+    url_username: "{{ ADGUARD_USERNAME }}"
+    url_password: "{{ ADGUARD_PASSWORD }}"
+    force_basic_auth: true
+    body_format: json
+    body:
+      domain: "{{ rewrite_entry.domain }}"
+      answer: "{{ rewrite_entry.answer }}"
+      enabled: "{{ rewrite_entry.enabled | default(true) | bool }}"
+    status_code: 200
+    timeout: "{{ adguard_request_timeout }}"
+  loop: "{{ dns_rewrite_entries }}"
+  loop_control:
+    loop_var: rewrite_entry
+    label: "{{ rewrite_entry.domain }}"
+  vars:
+    existing_domains: "{{ adguard_rewrite_list_after_cleanup.json | default([]) | map(attribute='domain') | list }}"
+  when: rewrite_entry.domain not in existing_domains
+  no_log: true

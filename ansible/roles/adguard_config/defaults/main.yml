@@ -1,0 +1,14 @@
+---
+adguard_api_scheme: http
+adguard_api_host: 127.0.0.1
+adguard_api_port: 80
+adguard_bootstrap_port: 3000
+adguard_api_base_url: "{{ adguard_api_scheme }}://{{ adguard_api_host }}:{{ adguard_api_port }}"
+adguard_bootstrap_base_url: "{{ adguard_api_scheme }}://{{ adguard_api_host }}:{{ adguard_bootstrap_port }}"
+adguard_web_bind_ip: 0.0.0.0
+adguard_web_port: 80
+adguard_dns_bind_ip: 0.0.0.0
+adguard_dns_port: 53
+adguard_request_timeout: 10
+
+dns_rewrite_entries: []

@@ -7,6 +7,8 @@ compose_stack_dest_dir: "{{ teslamate_base_dir }}"
 compose_stack_owner: root
 compose_stack_group: root
 compose_stack_directories:
+  - "{{ teslamate_base_dir }}/backups"
+  - "{{ teslamate_base_dir }}/bin"
   - "{{ teslamate_base_dir }}/import"
   - "{{ teslamate_base_dir }}/postgres"
   - "{{ teslamate_base_dir }}/postgres-data"
@@ -17,6 +19,8 @@ compose_stack_directory_specs:
     group: "472"
 compose_stack_template_modes:
   ".env": "0640"
+  "bin/teslamate-backup": "0755"
+  "bin/teslamate-restore": "0755"
   "pgbackrest/pgbackrest.conf": "0640"
 
 TESLAMATE_ENCRYPTION_KEY: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ENCRYPTION_KEY') | default(undef('Missing env var: TESLAMATE_ENCRYPTION_KEY'), true) }}"

@@ -1,0 +1,67 @@
+#!/usr/bin/env bash
+set -euo pipefail
+
+usage() {
+  echo "Usage: $0 <teslamate.bck|teslamate.bck.gz>"
+}
+
+if [ "${1:-}" = "" ]; then
+  usage
+  exit 2
+fi
+
+stack_dir="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+cd "${stack_dir}"
+
+backup_file="$1"
+if [ ! -r "${backup_file}" ]; then
+  echo "Backup file is not readable: ${backup_file}" >&2
+  exit 1
+fi
+
+if [ -f .env ]; then
+  set -a
+  # shellcheck disable=SC1091
+  source .env
+  set +a
+fi
+
+db_user="${TESLAMATE_PG_USER:-teslamate}"
+db_name="${TESLAMATE_PG_DB:-teslamate}"
+
+echo "Stopping TeslaMate application containers..."
+docker compose stop teslamate-teslamate teslamate-grafana teslamate-abrp
+
+echo "Resetting TeslaMate database schemas..."
+docker compose exec -T teslamate-postgres psql \
+  -v ON_ERROR_STOP=1 \
+  -U "${db_user}" \
+  -d "${db_name}" <<'SQL'
+DROP SCHEMA IF EXISTS public CASCADE;
+DROP SCHEMA IF EXISTS private CASCADE;
+CREATE SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS cube WITH SCHEMA public;
+CREATE EXTENSION IF NOT EXISTS earthdistance WITH SCHEMA public;
+SQL
+
+echo "Restoring ${backup_file}..."
+case "${backup_file}" in
+  *.gz)
+    gzip -dc "${backup_file}" | docker compose exec -T teslamate-postgres psql \
+      -v ON_ERROR_STOP=1 \
+      -U "${db_user}" \
+      -d "${db_name}"
+    ;;
+  *)
+    docker compose exec -T teslamate-postgres psql \
+      -v ON_ERROR_STOP=1 \
+      -U "${db_user}" \
+      -d "${db_name}" \
+      < "${backup_file}"
+    ;;
+esac
+
+echo "Starting TeslaMate application containers..."
+docker compose start teslamate-teslamate teslamate-grafana teslamate-abrp
+
+echo "Restore complete."

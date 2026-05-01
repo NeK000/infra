@@ -275,6 +275,40 @@ The TeslaMate app hostname is intentionally separate from the node hostname:
 - `teslamate-app.ninik.lab`: application route, resolves to edge and is proxied to `10.50.10.211:4000`.
 - `teslamate-grafana.ninik.lab`: application route, resolves to edge and is proxied to `10.50.10.211:3000`.
 
+TeslaMate maintenance helpers are deployed to:
+
+```text
+/opt/teslamate/bin/
+```
+
+The helper scripts follow TeslaMate's documented logical backup/restore flow using `pg_dump` and `psql`, adapted to this stack's service names and environment variables.
+
+Create a backup:
+
+```bash
+ssh root@teslamate.ninik.lab
+/opt/teslamate/bin/teslamate-backup
+```
+
+The default backup path is:
+
+```text
+/opt/teslamate/backups/teslamate_YYYYMMDD-HHMM.bck
+```
+
+Copy backups to off-host storage after creation.
+
+Restore a backup:
+
+```bash
+ssh root@teslamate.ninik.lab
+/opt/teslamate/bin/teslamate-restore /opt/teslamate/backups/teslamate_YYYYMMDD-HHMM.bck
+```
+
+The restore helper stops TeslaMate application containers, drops and recreates the expected schemas/extensions, imports the backup, and starts the application containers again. It supports plain `.bck` files and gzip-compressed `.gz` files.
+
+The TeslaMate `TESLAMATE_ENCRYPTION_KEY` must match the original installation that created the backup.
+
 ## DNS And Routing
 
 DNS rewrites live in `ansible/group_vars/dns.yml`.

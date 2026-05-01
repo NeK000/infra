@@ -16,9 +16,10 @@ Workflow:
 
 1. Apply Terraform for the target environment under `terraform/environments/`.
 2. Export or generate Ansible inventory from Terraform outputs.
-3. Run `just run <config> <host>` from repo root, or run `ansible-playbook` with the repo-root `ansible.cfg` against `ansible/playbooks/site.yml`.
+3. Run `just run <host>` from repo root, or run `ansible-playbook` with `ansible/ansible.cfg` against `ansible/run.yaml`.
 
 Current state:
 
-- `ansible/inventory/lab/hosts.yml` is still static.
-- `terraform/` is scaffolded for the next step: replacing static inventory with generated host data.
+- `ansible/hosts.ini` is the active static lab inventory.
+- The detailed Ansible service architecture, routing model, and deployment drawing are documented in `docs/ansible.md`.
+- The detailed Terraform provisioning architecture, LXC module design, and deployment drawing are documented in `docs/terraform.md`.

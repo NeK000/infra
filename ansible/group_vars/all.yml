@@ -8,6 +8,15 @@ common_packages:
 
 timezone: Europe/Copenhagen
 
+##### Compose stack defaults
+compose_stack_host_name: "{{ inventory_hostname_short }}"
+compose_stack_base_dir: "/opt/{{ compose_stack_host_name }}"
+compose_stack_name: "{{ compose_stack_host_name }}"
+compose_stack_project_name: "{{ compose_stack_name }}"
+compose_stack_dest_dir: "{{ compose_stack_base_dir }}"
+compose_stack_template_modes:
+  ".env": "0640"
+
 ##### Static network settings
 IP_NAS: "10.50.10.2"
 IP_PBS: "10.50.10.3"
@@ -16,6 +25,7 @@ IP_EDGE: "10.50.10.210"
 IP_TESLAMATE: "10.50.10.211"
 IP_DNS: "10.50.10.212"
 IP_MONITORING: "10.50.10.213"
+IP_AIML: "10.50.10.200"
 IP_TOWER: "10.10.1.20"
 IP_FAT_LADY: "10.10.1.20"
 IP_HOMEASSISTANT: "10.10.1.31"
@@ -43,3 +53,6 @@ PVE2_PASSWORD: "{{ lookup('ansible.builtin.env', 'PVE2_PASSWORD') | default('', 
 ###Home Assistant
 HOME_ASSISTANT_URL: "{{ lookup('ansible.builtin.env', 'HOME_ASSISTANT_URL') | default('', true) }}"
 HOME_ASSISTANT_ACCESS_TOKEN: "{{ lookup('ansible.builtin.env', 'HOME_ASSISTANT_ACCESS_TOKEN') | default('', true) }}"
+###Immich
+IMMICH_API_KEY: "{{ lookup('ansible.builtin.env', 'IMMICH_API_KEY') | default('', true) }}"
+IMMICH_DB_PASSWORD: "{{ lookup('ansible.builtin.env', 'IMMICH_DB_PASSWORD') | default(undef('Missing env var: IMMICH_DB_PASSWORD'), true) }}"

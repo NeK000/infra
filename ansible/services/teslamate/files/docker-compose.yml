@@ -64,11 +64,6 @@ services:
       homepage.name: TeslaMate
       homepage.href: http://teslamate-app.ninik.lab/
       homepage.description: Tesla vehicle dashboard
-      traefik.enable: "true"
-      traefik.docker.network: teslamate-stack
-      traefik.http.routers.teslamate.rule: Host(`teslamate-app.ninik.lab`)
-      traefik.http.routers.teslamate.entrypoints: web
-      traefik.http.services.teslamate.loadbalancer.server.port: "4000"
 
   teslamate-grafana:
     image: teslamate/grafana:3.0.0
@@ -96,11 +91,6 @@ services:
       homepage.name: TeslaMate Grafana
       homepage.href: http://teslamate-grafana.ninik.lab/
       homepage.description: TeslaMate Grafana dashboards
-      traefik.enable: "true"
-      traefik.docker.network: teslamate-stack
-      traefik.http.routers.teslamate-grafana.rule: Host(`teslamate-grafana.ninik.lab`)
-      traefik.http.routers.teslamate-grafana.entrypoints: web
-      traefik.http.services.teslamate-grafana.loadbalancer.server.port: "3000"
 
   teslamate-abrp:
     image: fetzu/teslamate-abrp:3.4.0

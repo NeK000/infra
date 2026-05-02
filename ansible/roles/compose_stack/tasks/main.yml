@@ -60,6 +60,28 @@
   register: compose_stack_template_files
   when: compose_stack_local_templates_dir_stat.stat.exists
 
+- name: Find local static directories
+  ansible.builtin.find:
+    paths: "{{ compose_stack_local_files_dir }}"
+    recurse: true
+    file_type: directory
+    hidden: true
+  delegate_to: localhost
+  become: false
+  register: compose_stack_static_directories
+  when: compose_stack_local_files_dir_stat.stat.exists
+
+- name: Find local template directories
+  ansible.builtin.find:
+    paths: "{{ compose_stack_local_templates_dir }}"
+    recurse: true
+    file_type: directory
+    hidden: true
+  delegate_to: localhost
+  become: false
+  register: compose_stack_template_directories
+  when: compose_stack_local_templates_dir_stat.stat.exists
+
 - name: Create compose stack directories
   ansible.builtin.file:
     path: "{{ item }}"
@@ -67,7 +89,27 @@
     owner: "{{ compose_stack_owner }}"
     group: "{{ compose_stack_group }}"
     mode: "{{ compose_stack_directory_mode }}"
-  loop: "{{ [compose_stack_dest_dir] + compose_stack_directories }}"
+  loop: "{{ ([compose_stack_dest_dir] + compose_stack_source_directories + (compose_stack_directories | default([]))) | unique }}"
+  vars:
+    compose_stack_static_source_directories: >-
+      {{
+        compose_stack_static_directories.files | default([])
+        | map(attribute='path')
+        | map('replace', compose_stack_local_files_dir ~ '/', '')
+        | reject('equalto', '')
+        | map('regex_replace', '^(.*)$', compose_stack_dest_dir ~ '/\\1')
+        | list
+      }}
+    compose_stack_template_source_directories: >-
+      {{
+        compose_stack_template_directories.files | default([])
+        | map(attribute='path')
+        | map('replace', compose_stack_local_templates_dir ~ '/', '')
+        | reject('equalto', '')
+        | map('regex_replace', '^(.*)$', compose_stack_dest_dir ~ '/\\1')
+        | list
+      }}
+    compose_stack_source_directories: "{{ compose_stack_static_source_directories + compose_stack_template_source_directories }}"
 
 - name: Create compose stack directories with custom ownership
   ansible.builtin.file:

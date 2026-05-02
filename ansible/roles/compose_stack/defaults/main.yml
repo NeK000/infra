@@ -10,7 +10,8 @@ compose_stack_local_templates_dir: "{{ compose_stack_local_service_dir }}/templa
 compose_stack_compose_files:
   - docker-compose.yml
 
-compose_stack_directories: []
+compose_stack_extra_directories: []
+compose_stack_directories: "{{ compose_stack_extra_directories }}"
 compose_stack_directory_specs: []
 compose_stack_managed_files: []
 compose_stack_secret_files: []

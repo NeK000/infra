@@ -1,29 +1,14 @@
 ---
 # TODO: vault this secret before the first real deployment.
-edge_base_dir: /opt/edge
-
-compose_stack_name: edge
-compose_stack_project_name: edge
-compose_stack_dest_dir: "{{ edge_base_dir }}"
-compose_stack_owner: root
-compose_stack_group: root
-compose_stack_directories:
-  - "{{ edge_base_dir }}/traefik"
-  - "{{ edge_base_dir }}/traefik/dynamic"
-  - "{{ edge_base_dir }}/traefik/logs"
-  - "{{ edge_base_dir }}/homepage"
-  - "{{ edge_base_dir }}/homepage/config"
-  - "{{ edge_base_dir }}/homepage/data"
-  - "{{ edge_base_dir }}/tsdproxy"
-  - "{{ edge_base_dir }}/tsdproxy/config"
-  - "{{ edge_base_dir }}/tsdproxy/data"
-  - "{{ edge_base_dir }}/tsdproxy/secrets"
+compose_stack_extra_directories:
+  - "{{ compose_stack_dest_dir }}/traefik/logs"
+  - "{{ compose_stack_dest_dir }}/homepage/data"
+  - "{{ compose_stack_dest_dir }}/tsdproxy/data"
+  - "{{ compose_stack_dest_dir }}/tsdproxy/secrets"
 compose_stack_secret_files:
-  - dest: "{{ edge_base_dir }}/tsdproxy/secrets/tailscale-authkey"
+  - dest: "{{ compose_stack_dest_dir }}/tsdproxy/secrets/tailscale-authkey"
     content: "{{ EDGE_TAILSCALE_AUTHKEY }}"
-    mode: "{{compose_stack_secret_file_default_mode}}"
-compose_stack_template_modes:
-  ".env": "0640"
+    mode: "{{ compose_stack_secret_file_default_mode }}"
 
 ####### LOCAL domains
 local_traefik_domain: traefik.ninik.lab
@@ -41,6 +26,10 @@ docker_hosts:
     host: "{{ IP_TESLAMATE }}"
     port: 2375
     target_hostname: "{{ IP_TESLAMATE }}"
+  - name: AIML
+    host: "{{ IP_AIML }}"
+    port: 2375
+    target_hostname: "{{ IP_AIML }}"
   - name: NAS
     host: "{{ IP_NAS }}"
     port: 2375
@@ -58,3 +47,7 @@ remote_http_services:
     host: "{{ IP_HOMEASSISTANT }}"
     port: 8123
     domain: homeassistant.ninik.lab
+  - name: immich
+    host: "{{ IP_AIML }}"
+    port: 8080
+    domain: immich.ninik.lab

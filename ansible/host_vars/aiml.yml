@@ -1,0 +1,14 @@
+---
+docker_users:
+  - aiml
+
+compose_stack_wait_timeout: 180
+compose_stack_extra_directories:
+  - "{{ compose_stack_dest_dir }}/immich/libraries"
+  - "{{ compose_stack_dest_dir }}/immich/photos"
+  - "{{ compose_stack_dest_dir }}/immich/postgres-data"
+
+nvidia_gpu_driver_package: nvidia-driver-550-server
+nvidia_gpu_utility_packages:
+  - nvidia-utils-550-server
+nvidia_gpu_reboot_after_driver_install: false

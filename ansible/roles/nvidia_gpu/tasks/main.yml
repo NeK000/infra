@@ -1,0 +1,120 @@
+---
+- name: Install NVIDIA driver prerequisites
+  ansible.builtin.apt:
+    name:
+      - ca-certificates
+      - curl
+      - dkms
+      - gpg
+      - ubuntu-drivers-common
+      - linux-headers-generic
+      - "linux-headers-{{ ansible_facts.kernel }}"
+    state: present
+    update_cache: true
+    cache_valid_time: 3600
+
+- name: Check for NVIDIA PCI devices
+  ansible.builtin.command:
+    cmd: lspci -nn
+  register: nvidia_gpu_lspci
+  changed_when: false
+  failed_when: false
+
+- name: Warn when no NVIDIA PCI device is visible
+  ansible.builtin.debug:
+    msg: >-
+      No NVIDIA PCI device is visible inside this VM. Configure Proxmox PCI
+      passthrough for the GPU before the guest driver can work.
+  when: '"NVIDIA" not in nvidia_gpu_lspci.stdout'
+
+- name: Install NVIDIA driver packages
+  ansible.builtin.apt:
+    name: "{{ [nvidia_gpu_driver_package] + nvidia_gpu_utility_packages }}"
+    state: present
+  register: nvidia_gpu_driver_install
+  notify: Reboot after NVIDIA driver install
+
+- name: Download NVIDIA Container Toolkit repository key
+  ansible.builtin.get_url:
+    url: "{{ nvidia_gpu_container_toolkit_key_url }}"
+    dest: "{{ nvidia_gpu_container_toolkit_key_ascii_path }}"
+    mode: "0644"
+
+- name: Install NVIDIA Container Toolkit repository keyring
+  ansible.builtin.command:
+    cmd: "gpg --dearmor -o {{ nvidia_gpu_container_toolkit_keyring_path }} {{ nvidia_gpu_container_toolkit_key_ascii_path }}"
+    creates: "{{ nvidia_gpu_container_toolkit_keyring_path }}"
+
+- name: Configure NVIDIA Container Toolkit apt repository
+  ansible.builtin.copy:
+    dest: "{{ nvidia_gpu_container_toolkit_repo_path }}"
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      deb [signed-by={{ nvidia_gpu_container_toolkit_keyring_path }}] https://nvidia.github.io/libnvidia-container/stable/deb/$(ARCH) /
+
+- name: Install NVIDIA Container Toolkit
+  ansible.builtin.apt:
+    name: "{{ nvidia_gpu_container_toolkit_packages }}"
+    state: present
+    update_cache: true
+
+- name: Check Docker runtimes before NVIDIA configuration
+  ansible.builtin.command:
+    cmd: docker info --format '{{ "{{" }}json .Runtimes{{ "}}" }}'
+  register: nvidia_gpu_docker_runtimes_before
+  changed_when: false
+  failed_when: false
+  when: nvidia_gpu_configure_docker_runtime | bool
+
+- name: Configure NVIDIA runtime for Docker
+  ansible.builtin.command:
+    cmd: nvidia-ctk runtime configure --runtime=docker
+  register: nvidia_gpu_docker_runtime
+  changed_when: true
+  notify: Restart docker
+  when:
+    - nvidia_gpu_configure_docker_runtime | bool
+    - nvidia_gpu_docker_runtimes_before.rc != 0 or '"nvidia"' not in nvidia_gpu_docker_runtimes_before.stdout
+
+- name: Flush NVIDIA GPU handlers
+  ansible.builtin.meta: flush_handlers
+
+- name: Check NVIDIA driver visibility
+  ansible.builtin.command:
+    cmd: nvidia-smi
+  register: nvidia_gpu_smi
+  changed_when: false
+  failed_when: false
+
+- name: Inspect loaded NVIDIA kernel modules
+  ansible.builtin.command:
+    cmd: lsmod
+  register: nvidia_gpu_lsmod
+  changed_when: false
+  failed_when: false
+  when: nvidia_gpu_smi.rc != 0
+
+- name: Fail when NVIDIA driver is not usable
+  ansible.builtin.fail:
+    msg: >-
+      nvidia-smi failed. If the driver was just installed, reboot the VM and
+      rerun this play. If it still fails after reboot, verify Proxmox PCI
+      passthrough and that an NVIDIA PCI device is visible in the VM with
+      lspci. NVIDIA module loaded: {{ 'nvidia' in nvidia_gpu_lsmod.stdout }}.
+  when: nvidia_gpu_smi.rc != 0
+
+- name: Check NVIDIA runtime in Docker
+  ansible.builtin.command:
+    cmd: docker info --format '{{ "{{" }}json .Runtimes{{ "}}" }}'
+  register: nvidia_gpu_docker_runtimes
+  changed_when: false
+  when: nvidia_gpu_configure_docker_runtime | bool
+
+- name: Verify NVIDIA runtime is registered with Docker
+  ansible.builtin.assert:
+    that:
+      - '"nvidia" in nvidia_gpu_docker_runtimes.stdout'
+    fail_msg: NVIDIA runtime is not registered with Docker.
+  when: nvidia_gpu_configure_docker_runtime | bool

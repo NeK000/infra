@@ -12,6 +12,8 @@
     roles:
       - role: packages
       - role: geerlingguy.docker
+      - role: nvidia_gpu
+      - role: compose_stack
 
   - hosts: edge
     roles:

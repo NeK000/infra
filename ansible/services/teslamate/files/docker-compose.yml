@@ -106,7 +106,7 @@ services:
       CAR_MODEL: "${TESLAMATE_ABRP_CAR_MODEL}"
 
   teslamate-socket-proxy:
-    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
     restart: unless-stopped
     ports:
       - "2375:2375"

@@ -113,6 +113,7 @@ services:
     environment:
       CONTAINERS: "1"
       EVENTS: "1"
+      IMAGES: "1"
       INFO: "1"
       NETWORKS: "1"
       PING: "1"

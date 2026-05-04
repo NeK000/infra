@@ -37,6 +37,9 @@ dns_rewrite_entries:
     answer: "{{ IP_PBS }}"
   - domain: pve2.ninik.lab
     answer: "{{ IP_PVE2 }}"
+  - domain: tsd.ninik.lab
+    answer: "{{ IP_EDGE }}"
+
 
 adguard_api_scheme: http
 adguard_api_host: "{{ IP_DNS }}"

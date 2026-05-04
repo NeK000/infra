@@ -59,6 +59,14 @@ services:
     labels:
       edge.stack.tsdproxy-config-sha: ${TSDPROXY_CONFIG_SHA}
       edge.stack.tsdproxy-authkey-sha: ${TSDPROXY_AUTHKEY_SHA}
+      homepage.group: Services
+      homepage.name: TSDProxy
+      homepage.href: http://tsd.ninik.lab/
+      traefik.enable: "true"
+      traefik.docker.network: edge-stack
+      traefik.http.routers.tsdproxy.rule: Host(`http://tsd.ninik.lab/`)
+      traefik.http.routers.tsdproxy.entrypoints: web
+      traefik.http.services.tsdproxy.loadbalancer.server.port: "8080"
       tsdproxy.enable: "false"
 
   edge-socket-proxy:
@@ -67,6 +75,7 @@ services:
     environment:
       CONTAINERS: "1"
       EVENTS: "1"
+      IMAGES: "1"
       INFO: "1"
       NETWORKS: "1"
       PING: "1"

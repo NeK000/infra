@@ -10,13 +10,19 @@ docker:
   {{ docker_host.name }}:
     host: "tcp://{{ docker_host.host }}:{{ docker_host.port }}"
     targetHostname: "{{ docker_host.target_hostname }}"
-    defaultProxyProvider: default
+    defaultProxyProvider: {{ docker_host.proxy_provider | default('default') }}
 {% endfor %}
 
 tailscale:
   providers:
     default:
       authKeyFile: /run/secrets/tailscale_authkey
+{% for docker_host in docker_hosts %}
+{% if docker_host.proxy_provider is defined and docker_host.proxy_provider != 'default' %}
+    {{ docker_host.proxy_provider }}:
+      authKeyFile: {{ docker_host.proxy_auth_key_file | default('/run/secrets/tailscale-authkey-' ~ docker_host.proxy_provider) }}
+{% endif %}
+{% endfor %}
   dataDir: /data
 
 http:

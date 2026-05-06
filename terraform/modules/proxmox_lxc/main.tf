@@ -142,9 +142,23 @@ variable "mount_points" {
   default = []
 }
 
+variable "raw_lxc_config" {
+  type        = list(string)
+  description = "Raw LXC config lines to manage in /etc/pve/lxc/<vm_id>.conf over SSH for options unsupported by the Proxmox API."
+  default     = []
+}
+
+variable "raw_lxc_config_ssh_host" {
+  type        = string
+  description = "SSH host used when applying raw_lxc_config. Defaults to target_node."
+  default     = null
+}
+
 locals {
-  container_hostname = coalesce(var.hostname, var.name)
-  template_file_id   = "${var.ostemplate_storage}:vztmpl/${var.ostemplate}"
+  container_hostname      = coalesce(var.hostname, var.name)
+  template_file_id        = "${var.ostemplate_storage}:vztmpl/${var.ostemplate}"
+  raw_lxc_config          = trimspace(join("\n", var.raw_lxc_config))
+  raw_lxc_config_ssh_host = coalesce(var.raw_lxc_config_ssh_host, var.target_node)
 }
 
 resource "proxmox_virtual_environment_container" "this" {
@@ -214,6 +228,72 @@ resource "proxmox_virtual_environment_container" "this" {
   operating_system {
     template_file_id = local.template_file_id
     type             = "ubuntu"
+  }
+}
+
+resource "terraform_data" "raw_lxc_config" {
+  count = local.raw_lxc_config == "" ? 0 : 1
+
+  triggers_replace = {
+    config_hash      = sha256(local.raw_lxc_config)
+    restart_strategy = "stop-start-after-raw-lxc-config"
+    ssh_host         = local.raw_lxc_config_ssh_host
+    target_node      = var.target_node
+    vm_id            = var.vm_id
+    container_id     = proxmox_virtual_environment_container.this.id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+set -eu
+ssh root@${local.raw_lxc_config_ssh_host} 'CONFIG_PATH="/etc/pve/lxc/${var.vm_id}.conf" python3 - <<'"'"'PY'"'"'
+import os
+from pathlib import Path
+
+config_path = Path(os.environ["CONFIG_PATH"])
+managed = """${local.raw_lxc_config}""".strip()
+start = "# BEGIN terraform raw_lxc_config"
+end = "# END terraform raw_lxc_config"
+block = f"{start}\n{managed}\n{end}\n"
+
+text = config_path.read_text()
+obsolete_prefixes = (
+    "dev",
+)
+obsolete_contains = (
+    "/dev/dri",
+    "c 226:0 rwm",
+    "c 226:128 rwm",
+)
+kept_lines = []
+for line in text.splitlines():
+    stripped = line.strip()
+    if stripped.startswith("lxc.idmap: "):
+        continue
+    if any(stripped.startswith(prefix) for prefix in obsolete_prefixes):
+        continue
+    if any(value in stripped for value in obsolete_contains):
+        continue
+    kept_lines.append(line)
+text = "\n".join(kept_lines)
+
+if start in text and end in text:
+    before = text.split(start, 1)[0].rstrip()
+    after = text.split(end, 1)[1].lstrip()
+    text = f"{before}\n{block}{after}"
+else:
+    text = text.rstrip() + "\n" + block
+
+config_path.write_text(text)
+PY'
+
+ssh root@${local.raw_lxc_config_ssh_host} 'set -eu
+if pct status ${var.vm_id} | grep -q "status: running"; then
+  pct stop ${var.vm_id}
+fi
+pct start ${var.vm_id}
+'
+EOT
   }
 }
 

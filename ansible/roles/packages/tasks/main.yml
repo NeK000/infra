@@ -1,3 +1,39 @@
+- name: Configure Ubuntu apt sources
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list.d/ubuntu.sources
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      Types: deb
+      URIs: {{ packages_ubuntu_mirror }}
+      Suites: {{ packages_ubuntu_codename }} {{ packages_ubuntu_codename }}-updates {{ packages_ubuntu_codename }}-backports
+      Components: main restricted universe multiverse
+      Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+
+      Types: deb
+      URIs: {{ packages_ubuntu_security_mirror }}
+      Suites: {{ packages_ubuntu_codename }}-security
+      Components: main restricted universe multiverse
+      Signed-By: /usr/share/keyrings/ubuntu-archive-keyring.gpg
+  when:
+    - packages_manage_ubuntu_sources | bool
+    - ansible_facts.os_family == "Debian"
+    - ansible_facts.distribution == "Ubuntu"
+
+- name: Disable legacy Ubuntu apt sources
+  ansible.builtin.copy:
+    dest: /etc/apt/sources.list
+    owner: root
+    group: root
+    mode: "0644"
+    content: |
+      # Managed by Ansible. Ubuntu deb822 sources are in /etc/apt/sources.list.d/ubuntu.sources.
+  when:
+    - packages_manage_ubuntu_sources | bool
+    - ansible_facts.os_family == "Debian"
+    - ansible_facts.distribution == "Ubuntu"
+
 - name: Update apt cache
   ansible.builtin.apt:
     update_cache: true

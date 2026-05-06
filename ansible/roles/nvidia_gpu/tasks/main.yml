@@ -1,49 +1,114 @@
 ---
-- name: Install NVIDIA driver prerequisites
+- name: Purge conflicting NVIDIA guest packages
+  ansible.builtin.shell: |
+    set -o pipefail
+    packages="$(
+      dpkg-query -W -f='${binary:Package}\n' 'nvidia-*' 'libnvidia-*' 2>/dev/null \
+        | sed 's/:.*//' \
+        | sort -u \
+        | grep -Ev '^(nvidia-container-toolkit|nvidia-container-toolkit-base|libnvidia-container1|libnvidia-container-tools)$' || true
+    )"
+    if [ -z "$packages" ]; then
+      echo "No conflicting NVIDIA guest packages installed"
+      exit 0
+    fi
+    echo "Purging conflicting NVIDIA guest packages: $packages"
+    apt-get purge -y $packages
+  args:
+    executable: /bin/bash
+  register: nvidia_gpu_purge
+  changed_when: "'Purging conflicting NVIDIA guest packages' in nvidia_gpu_purge.stdout"
+
+- name: Autoremove packages after NVIDIA purge
+  ansible.builtin.apt:
+    autoremove: true
+    purge: true
+  register: nvidia_gpu_autoremove
+
+- name: Install NVIDIA Container Toolkit prerequisites
   ansible.builtin.apt:
     name:
       - ca-certificates
       - curl
-      - dkms
       - gpg
-      - ubuntu-drivers-common
-      - linux-headers-generic
-      - "linux-headers-{{ ansible_facts.kernel }}"
     state: present
     update_cache: true
     cache_valid_time: 3600
 
-- name: Check for NVIDIA PCI devices
-  ansible.builtin.command:
-    cmd: lspci -nn
-  register: nvidia_gpu_lspci
-  changed_when: false
-  failed_when: false
+- name: Check NVIDIA host bind mounts from Terraform
+  ansible.builtin.stat:
+    path: "{{ item }}"
+  loop:
+    - /usr/bin/nvidia-smi
+    - "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.{{ nvidia_gpu_driver_version }}"
+    - "/usr/lib/x86_64-linux-gnu/libcuda.so.{{ nvidia_gpu_driver_version }}"
+  register: nvidia_gpu_bind_mounts
 
-- name: Warn when no NVIDIA PCI device is visible
-  ansible.builtin.debug:
+- name: Fail when NVIDIA host bind mounts are missing
+  ansible.builtin.fail:
     msg: >-
-      No NVIDIA PCI device is visible inside this VM. Configure Proxmox PCI
-      passthrough for the GPU before the guest driver can work.
-  when: '"NVIDIA" not in nvidia_gpu_lspci.stdout'
+      Missing NVIDIA host bind mounts inside this LXC: {{
+      nvidia_gpu_bind_mounts.results
+      | rejectattr('stat.exists')
+      | map(attribute='item')
+      | list
+      }}. Run Terraform for aiml, then stop/start CT 214 so Proxmox applies
+      the raw lxc.mount.entry lines. Do not install Ubuntu nvidia-utils or
+      libnvidia packages in the guest.
+  when: nvidia_gpu_bind_mounts.results | rejectattr('stat.exists') | list | length > 0
 
-- name: Install NVIDIA driver packages
-  ansible.builtin.apt:
-    name: "{{ [nvidia_gpu_driver_package] + nvidia_gpu_utility_packages }}"
-    state: present
-  register: nvidia_gpu_driver_install
-  notify: Reboot after NVIDIA driver install
+- name: Ensure NVIDIA library directory exists
+  ansible.builtin.file:
+    path: /usr/lib/x86_64-linux-gnu
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
+
+- name: Create NVIDIA userspace library symlinks
+  ansible.builtin.file:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    state: link
+    force: true
+    follow: false
+  loop:
+    - src: "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.{{ nvidia_gpu_driver_version }}"
+      dest: /usr/lib/x86_64-linux-gnu/libnvidia-ml.so.1
+    - src: "/usr/lib/x86_64-linux-gnu/libcuda.so.{{ nvidia_gpu_driver_version }}"
+      dest: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+    - src: /usr/lib/x86_64-linux-gnu/libcuda.so.1
+      dest: /usr/lib/x86_64-linux-gnu/libcuda.so
+
+- name: Refresh dynamic linker cache
+  ansible.builtin.command:
+    cmd: ldconfig
+  changed_when: false
+
+- name: Ensure apt keyring directory exists
+  ansible.builtin.file:
+    path: /usr/share/keyrings
+    state: directory
+    owner: root
+    group: root
+    mode: "0755"
 
 - name: Download NVIDIA Container Toolkit repository key
   ansible.builtin.get_url:
     url: "{{ nvidia_gpu_container_toolkit_key_url }}"
     dest: "{{ nvidia_gpu_container_toolkit_key_ascii_path }}"
     mode: "0644"
+  register: nvidia_gpu_container_toolkit_key
+
+- name: Check NVIDIA Container Toolkit keyring
+  ansible.builtin.stat:
+    path: "{{ nvidia_gpu_container_toolkit_keyring_path }}"
+  register: nvidia_gpu_container_toolkit_keyring
 
 - name: Install NVIDIA Container Toolkit repository keyring
   ansible.builtin.command:
-    cmd: "gpg --dearmor -o {{ nvidia_gpu_container_toolkit_keyring_path }} {{ nvidia_gpu_container_toolkit_key_ascii_path }}"
-    creates: "{{ nvidia_gpu_container_toolkit_keyring_path }}"
+    cmd: "gpg --yes --dearmor -o {{ nvidia_gpu_container_toolkit_keyring_path }} {{ nvidia_gpu_container_toolkit_key_ascii_path }}"
+  when: nvidia_gpu_container_toolkit_key.changed or not nvidia_gpu_container_toolkit_keyring.stat.exists
 
 - name: Configure NVIDIA Container Toolkit apt repository
   ansible.builtin.copy:
@@ -59,6 +124,13 @@
     name: "{{ nvidia_gpu_container_toolkit_packages }}"
     state: present
     update_cache: true
+
+- name: Install Python Docker module dependencies
+  ansible.builtin.apt:
+    name:
+      - python3-docker
+      - python3-requests
+    state: present
 
 - name: Check Docker runtimes before NVIDIA configuration
   ansible.builtin.command:
@@ -81,40 +153,33 @@
 - name: Flush NVIDIA GPU handlers
   ansible.builtin.meta: flush_handlers
 
-- name: Check NVIDIA driver visibility
+- name: Validate NVIDIA userspace visibility
   ansible.builtin.command:
-    cmd: nvidia-smi
+    cmd: /usr/bin/nvidia-smi
   register: nvidia_gpu_smi
   changed_when: false
-  failed_when: false
 
-- name: Inspect loaded NVIDIA kernel modules
-  ansible.builtin.command:
-    cmd: lsmod
-  register: nvidia_gpu_lsmod
+- name: Validate Docker runtimes
+  ansible.builtin.shell: |
+    set -o pipefail
+    docker info | grep -i -A8 runtimes
+  args:
+    executable: /bin/bash
+  register: nvidia_gpu_docker_info
   changed_when: false
-  failed_when: false
-  when: nvidia_gpu_smi.rc != 0
 
-- name: Fail when NVIDIA driver is not usable
-  ansible.builtin.fail:
-    msg: >-
-      nvidia-smi failed. If the driver was just installed, reboot the VM and
-      rerun this play. If it still fails after reboot, verify Proxmox PCI
-      passthrough and that an NVIDIA PCI device is visible in the VM with
-      lspci. NVIDIA module loaded: {{ 'nvidia' in nvidia_gpu_lsmod.stdout }}.
-  when: nvidia_gpu_smi.rc != 0
-
-- name: Check NVIDIA runtime in Docker
+- name: Validate NVIDIA runtime with CUDA container
   ansible.builtin.command:
-    cmd: docker info --format '{{ "{{" }}json .Runtimes{{ "}}" }}'
-  register: nvidia_gpu_docker_runtimes
+    argv:
+      - docker
+      - run
+      - --rm
+      - --runtime=nvidia
+      - -e
+      - NVIDIA_VISIBLE_DEVICES=all
+      - -e
+      - "NVIDIA_DRIVER_CAPABILITIES={{ nvidia_gpu_validation_driver_capabilities }}"
+      - "{{ nvidia_gpu_cuda_validation_image }}"
+      - nvidia-smi
+  register: nvidia_gpu_cuda_validation
   changed_when: false
-  when: nvidia_gpu_configure_docker_runtime | bool
-
-- name: Verify NVIDIA runtime is registered with Docker
-  ansible.builtin.assert:
-    that:
-      - '"nvidia" in nvidia_gpu_docker_runtimes.stdout'
-    fail_msg: NVIDIA runtime is not registered with Docker.
-  when: nvidia_gpu_configure_docker_runtime | bool

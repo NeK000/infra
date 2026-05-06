@@ -1,3 +1,7 @@
 #SPDX-License-Identifier: MIT-0
 ---
 # defaults file for roles/packages
+packages_manage_ubuntu_sources: false
+packages_ubuntu_codename: "{{ ansible_facts.distribution_release | default('noble') }}"
+packages_ubuntu_mirror: http://archive.ubuntu.com/ubuntu
+packages_ubuntu_security_mirror: http://security.ubuntu.com/ubuntu

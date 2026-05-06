@@ -27,9 +27,9 @@ Each Docker service host is represented as an Ansible inventory group. The group
 | `dns` | `dns.ninik.lab` | `10.50.10.212` | AdGuard Home and DNS rewrites |
 | `monitoring` | `monitoring.ninik.lab` | `10.50.10.213` | Homepage widget sleeper containers |
 | `teslamate` | `teslamate.ninik.lab` | `10.50.10.211` | TeslaMate, Grafana, PostgreSQL, ABRP |
+| `aiml` | `aiml.ninik.lab` | `10.50.10.214` | Immich and NVIDIA-backed ML services |
 | `pve2` | `pve2` | `10.50.10.10` | Proxmox host package management |
 | `pbs` | `pbs` | `10.50.10.3` | Proxmox Backup Server package management |
-| `ai-ml` | `aiml` | inventory DNS | Package management and Docker |
 
 The common execution pattern is:
 

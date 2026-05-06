@@ -4,9 +4,3 @@
     name: docker
     state: restarted
   when: nvidia_gpu_configure_docker_runtime | bool
-
-- name: Reboot after NVIDIA driver install
-  ansible.builtin.reboot:
-    msg: Rebooting after NVIDIA driver installation
-    reboot_timeout: 600
-  when: nvidia_gpu_reboot_after_driver_install | bool

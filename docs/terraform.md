@@ -35,6 +35,7 @@ flowchart TB
     teslamate[teslamate LXC<br/>VMID 211<br/>10.50.10.211]
     dns[dns LXC<br/>VMID 212<br/>10.50.10.212]
     monitoring[monitoring LXC<br/>VMID 213<br/>10.50.10.213]
+    aiml[aiml LXC<br/>VMID 214<br/>10.50.10.214]
 
     outputs[Terraform outputs<br/>ansible_inventory<br/>lxc_summary]
     ansible[Ansible<br/>ansible/hosts.ini and run.yaml]
@@ -54,6 +55,7 @@ flowchart TB
     lxcModule --> teslamate
     lxcModule --> dns
     lxcModule --> monitoring
+    lxcModule --> aiml
 
     tfenv --> outputs
     outputs -. future/generated inventory .-> ansible
@@ -125,8 +127,9 @@ The active LXC map currently defines:
 | `teslamate` | `teslamate` | `211` | `10.50.10.211` | `pve2` | `16G` | `teslamate` |
 | `dns` | `dns` | `212` | `10.50.10.212` | `pve2` | `16G` | `dns` |
 | `monitoring` | `monitoring` | `213` | `10.50.10.213` | `pve2` | `16G` | `monitoring` |
+| `aiml` | `aiml` | `214` | `10.50.10.214` | `pve2` | `64G` | `aiml` |
 
-All current LXCs use:
+Unless overridden, LXCs use:
 
 - Ubuntu 24.04 LXC template: `ubuntu-24.04-standard_24.04-2_amd64.tar.zst`
 - `rootfs_storage`: `local-lvm`
@@ -141,6 +144,8 @@ All current LXCs use:
 - `fuse`: `true`
 
 Nesting, keyctl, and fuse are enabled because these LXCs are intended to run Docker after Ansible configures them.
+
+The `aiml` LXC also manages raw NVIDIA passthrough lines in `/etc/pve/lxc/214.conf` for cgroup device access and `/dev/nvidia*` bind mounts.
 
 ## LXC Module
 

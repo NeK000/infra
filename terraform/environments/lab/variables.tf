@@ -44,26 +44,28 @@ variable "default_user" {
 
 variable "lxcs" {
   type = map(object({
-    name               = string
-    vm_id              = number
-    target_node        = string
-    hostname           = optional(string)
-    description        = optional(string)
-    ip_address         = string
-    gateway            = optional(string)
-    cidr_prefix        = optional(number)
-    bridge             = optional(string)
-    vlan_tag           = optional(number)
-    nameserver         = optional(string)
-    search_domain      = optional(string)
-    ostemplate         = optional(string)
-    ostemplate_storage = optional(string)
-    rootfs_storage     = optional(string)
-    rootfs_size_gb     = optional(number)
+    name                    = string
+    vm_id                   = number
+    target_node             = string
+    raw_lxc_config_ssh_host = optional(string)
+    hostname                = optional(string)
+    description             = optional(string)
+    ip_address              = string
+    gateway                 = optional(string)
+    cidr_prefix             = optional(number)
+    bridge                  = optional(string)
+    vlan_tag                = optional(number)
+    nameserver              = optional(string)
+    search_domain           = optional(string)
+    ostemplate              = optional(string)
+    ostemplate_storage      = optional(string)
+    rootfs_storage          = optional(string)
+    rootfs_size_gb          = optional(number)
     mount_points = optional(list(object({
       path   = string
       volume = string
     })), [])
+    raw_lxc_config  = optional(list(string), [])
     cores           = optional(number, 2)
     memory_mb       = optional(number, 2048)
     swap_mb         = optional(number, 512)

@@ -43,3 +43,11 @@
       - role: compose_stack
         tags:
           - compose
+
+  - hosts: nextcloud
+    roles:
+      - role: packages
+      - role: geerlingguy.docker
+      - role: compose_stack
+        tags:
+          - compose

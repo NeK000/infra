@@ -34,6 +34,10 @@ proxmox_node_defaults = {
   cidr_prefix        = 24
   nameserver         = "10.50.10.212"
   search_domain      = "ninik.lab"
+  description    = "Fresh LXC managed by Terraform"
+  memory_mb          = 2048
+  swap_mb            = 512
+  cores              = 2
   ssh_public_keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGG3p4BAp4knnHin4c5jBekR9D9XhRqfFLjlYd1Jxeeg ninik@kontor"
   ]
@@ -47,12 +51,8 @@ lxcs = {
     vm_id          = 210
     target_node    = "pve-intel"
     hostname       = "edge"
-    description    = "Fresh LXC managed by Terraform"
     ip_address     = "10.50.10.210"
     rootfs_size_gb = 8
-    cores          = 2
-    memory_mb      = 2048
-    swap_mb        = 512
     ansible_groups = ["edge"]
   }
   teslamate = {
@@ -60,12 +60,8 @@ lxcs = {
     vm_id          = 211
     target_node    = "pve-intel"
     hostname       = "teslamate"
-    description    = "Fresh LXC managed by Terraform"
     ip_address     = "10.50.10.211"
     rootfs_size_gb = 16
-    cores          = 2
-    memory_mb      = 2048
-    swap_mb        = 512
     ansible_groups = ["teslamate"]
   }
   dns = {
@@ -73,13 +69,9 @@ lxcs = {
     vm_id          = 212
     target_node    = "pve-intel"
     hostname       = "dns"
-    description    = "Fresh LXC managed by Terraform"
     ip_address     = "10.50.10.212"
     nameserver     = "10.50.10.1"
     rootfs_size_gb = 12
-    cores          = 2
-    memory_mb      = 2048
-    swap_mb        = 512
     ansible_groups = ["dns"]
   }
   monitoring = {
@@ -87,12 +79,8 @@ lxcs = {
     vm_id          = 213
     target_node    = "pve-intel"
     hostname       = "monitoring"
-    description    = "Fresh LXC managed by Terraform"
     ip_address     = "10.50.10.213"
     rootfs_size_gb = 16
-    cores          = 2
-    memory_mb      = 2048
-    swap_mb        = 512
     ansible_groups = ["monitoring"]
   }
   aiml = {
@@ -100,7 +88,6 @@ lxcs = {
     vm_id                            = 214
     target_node                      = "pve-intel"
     hostname                         = "aiml"
-    description                      = "Fresh LXC managed by Terraform"
     ip_address                       = "10.50.10.214"
     rootfs_size_gb                   = 25
     cores                            = 4
@@ -131,5 +118,25 @@ lxcs = {
       "lxc.mount.entry: /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ml.so.550.163.01 usr/lib/x86_64-linux-gnu/libnvidia-ml.so.550.163.01 none bind,ro,optional,create=file",
       "lxc.mount.entry: /usr/lib/x86_64-linux-gnu/nvidia/current/libcuda.so.550.163.01 usr/lib/x86_64-linux-gnu/libcuda.so.550.163.01 none bind,ro,optional,create=file",
     ]
+  }
+  nextcloud = {
+    name                             = "nextcloud"
+    vm_id                            = 215
+    target_node                      = "pve-intel"
+    hostname                         = "nextcloud"
+    ip_address                       = "10.50.10.215"
+    rootfs_size_gb                   = 24
+    cores                            = 4
+    memory_mb                        = 4096
+    swap_mb                          = 1024
+    ansible_groups                   = ["nextcloud"]
+    post_create_reboot_delay_seconds = 10
+    mount_points = [
+      {
+        path   = "/data/nextcloud"
+        volume = "/hdd-zfs/nextcloud"
+      }
+    ]
+    raw_lxc_config_ssh_host = "10.10.1.50"
   }
 }

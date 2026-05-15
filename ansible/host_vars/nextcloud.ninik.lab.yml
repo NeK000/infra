@@ -1,0 +1,12 @@
+---
+compose_stack_extra_directories:
+  - "{{ compose_stack_dest_dir }}/nextcloud"
+  - "{{ compose_stack_dest_dir }}/postgres-data"
+  - "{{ compose_stack_dest_dir }}/redis-data"
+compose_stack_directory_specs:
+  - path: /data/nextcloud
+    owner: "33"
+    group: "33"
+    mode: "0750"
+compose_stack_template_modes:
+  ".env": "0640"

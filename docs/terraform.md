@@ -128,6 +128,7 @@ The active LXC map currently defines:
 | `dns` | `dns` | `212` | `10.50.10.212` | `pve2` | `16G` | `dns` |
 | `monitoring` | `monitoring` | `213` | `10.50.10.213` | `pve2` | `16G` | `monitoring` |
 | `aiml` | `aiml` | `214` | `10.50.10.214` | `pve2` | `64G` | `aiml` |
+| `nextcloud` | `nextcloud` | `215` | `10.50.10.215` | `pve2` | `32G` | `nextcloud` |
 
 Unless overridden, LXCs use:
 

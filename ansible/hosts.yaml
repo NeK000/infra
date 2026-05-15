@@ -8,6 +8,7 @@ all:
         monitoring:
         teslamate:
         aiml:
+        nextcloud:
 
     edge:
       hosts:
@@ -37,4 +38,10 @@ all:
       hosts:
         aiml.ninik.lab:
           ansible_host: 10.50.10.214
+          ansible_ssh_user: root
+
+    nextcloud:
+      hosts:
+        nextcloud.ninik.lab:
+          ansible_host: 10.50.10.215
           ansible_ssh_user: root

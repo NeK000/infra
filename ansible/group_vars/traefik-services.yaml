@@ -13,3 +13,6 @@ remote_http_services:
   - hostname: immich
     host: "{{ IP_AIML }}"
     port: 8080
+  - hostname: nextcloud
+    host: "{{ IP_NEXTCLOUD }}"
+    port: 8080

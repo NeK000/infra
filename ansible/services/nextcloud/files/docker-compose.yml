@@ -1,0 +1,100 @@
+---
+services:
+  nextcloud-db:
+    image: postgres:18.1-alpine
+    restart: unless-stopped
+    networks:
+      - nextcloud-stack
+    environment:
+      TZ: ${TIMEZONE}
+      POSTGRES_USER: ${NEXTCLOUD_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${NEXTCLOUD_POSTGRES_DB}
+    volumes:
+      - ./postgres-data:/var/lib/postgresql/data
+    healthcheck:
+      test:
+        - CMD-SHELL
+        - pg_isready -U ${NEXTCLOUD_DB_USER} -d ${NEXTCLOUD_POSTGRES_DB}
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  nextcloud-redis:
+    image: redis:8.6.3
+    restart: unless-stopped
+    networks:
+      - nextcloud-stack
+    environment:
+      TZ: ${TIMEZONE}
+    volumes:
+      - ./redis-data:/data
+    healthcheck:
+      test:
+        - CMD
+        - redis-cli
+        - ping
+      interval: 10s
+      timeout: 5s
+      retries: 10
+
+  nextcloud:
+    image: nextcloud:33.0.3-apache
+    restart: unless-stopped
+    networks:
+      - nextcloud-stack
+    ports:
+      - "8080:80"
+    environment:
+      TZ: ${TIMEZONE}
+      POSTGRES_HOST: nextcloud-db
+      POSTGRES_USER: ${NEXTCLOUD_DB_USER}
+      POSTGRES_PASSWORD: ${NEXTCLOUD_POSTGRES_PASSWORD}
+      POSTGRES_DB: ${NEXTCLOUD_POSTGRES_DB}
+      REDIS_HOST: nextcloud-redis
+      NEXTCLOUD_ADMIN_USER: ${NEXTCLOUD_ADMIN_USER}
+      NEXTCLOUD_ADMIN_PASSWORD: ${NEXTCLOUD_ADMIN_PASSWORD}
+      NEXTCLOUD_TRUSTED_DOMAINS: ${NEXTCLOUD_TRUSTED_DOMAINS}
+      TRUSTED_PROXIES: ${NEXTCLOUD_TRUSTED_PROXIES}
+      OVERWRITEHOST: ${NEXTCLOUD_OVERWRITEHOST}
+      OVERWRITEPROTOCOL: ${NEXTCLOUD_OVERWRITEPROTOCOL}
+    volumes:
+      - ./nextcloud:/var/www/html
+      - /data/nextcloud:/var/www/html/data
+    depends_on:
+      nextcloud-db:
+        condition: service_healthy
+      nextcloud-redis:
+        condition: service_healthy
+    labels:
+      homepage.group: Services
+      homepage.name: Nextcloud
+      homepage.href: http://nextcloud.ninik.lab/
+      homepage.description: Files and collaboration
+      tsdproxy.enable: "true"
+      tsdproxy.name: nextcloud
+      tsdproxy.container_port: "80"
+      tsdproxy.ephemeral: "true"
+
+  nextcloud-socket-proxy:
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
+    restart: unless-stopped
+    ports:
+      - "2375:2375"
+    environment:
+      CONTAINERS: "1"
+      EVENTS: "1"
+      IMAGES: "1"
+      INFO: "1"
+      NETWORKS: "1"
+      PING: "1"
+      POST: "0"
+      SERVICES: "0"
+      TASKS: "0"
+      VERSION: "1"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+
+networks:
+  nextcloud-stack:
+    name: nextcloud-stack

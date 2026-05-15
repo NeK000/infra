@@ -16,6 +16,8 @@ dns_rewrite_entries:
     answer: "{{ IP_EDGE }}"
   - domain: immich.ninik.lab
     answer: "{{ IP_EDGE }}"
+  - domain: nextcloud.ninik.lab
+    answer: "{{ IP_EDGE }}"
   - domain: traefik.ninik.lab
     answer: "{{ IP_EDGE }}"
   - domain: nas.local

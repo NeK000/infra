@@ -26,6 +26,7 @@ IP_TESLAMATE: "10.50.10.211"
 IP_DNS: "10.50.10.212"
 IP_MONITORING: "10.50.10.213"
 IP_AIML: "10.50.10.214"
+IP_NEXTCLOUD: "10.50.10.215"
 IP_TOWER: "10.10.1.20"
 IP_FAT_LADY: "10.10.1.20"
 IP_HOMEASSISTANT: "10.10.1.31"
@@ -56,6 +57,18 @@ HOME_ASSISTANT_ACCESS_TOKEN: "{{ lookup('ansible.builtin.env', 'HOME_ASSISTANT_A
 ###Immich
 IMMICH_API_KEY: "{{ lookup('ansible.builtin.env', 'IMMICH_API_KEY') | default('', true) }}"
 IMMICH_DB_PASSWORD: "{{ lookup('ansible.builtin.env', 'IMMICH_DB_PASSWORD') | default(undef('Missing env var: IMMICH_DB_PASSWORD'), true) }}"
+
+###Nextcloud
+NEXTCLOUD_ADMIN_USER: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_ADMIN_USER') | default(undef('Missing env var: NEXTCLOUD_ADMIN_USER'), true) }}"
+NEXTCLOUD_ADMIN_PASSWORD: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_ADMIN_PASSWORD') | default(undef('Missing env var: NEXTCLOUD_ADMIN_PASSWORD'), true) }}"
+NEXTCLOUD_DB_USER: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_DB_USER') | default('nextcloud', true) }}"
+NEXTCLOUD_POSTGRES_PASSWORD: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_POSTGRES_PASSWORD') | default(undef('Missing env var: NEXTCLOUD_POSTGRES_PASSWORD'), true) }}"
+NEXTCLOUD_POSTGRES_DB: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_POSTGRES_DB') | default('nextcloud', true) }}"
+NEXTCLOUD_TRUSTED_DOMAINS: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_TRUSTED_DOMAINS') | default('nextcloud.ninik.lab', true) }}"
+NEXTCLOUD_TRUSTED_PROXIES: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_TRUSTED_PROXIES') | default(IP_EDGE, true) }}"
+NEXTCLOUD_OVERWRITEHOST: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_OVERWRITEHOST') | default('', true) }}"
+NEXTCLOUD_OVERWRITEPROTOCOL: "{{ lookup('ansible.builtin.env', 'NEXTCLOUD_OVERWRITEPROTOCOL') | default('', true) }}"
+
 ###Teslamate
 TESLAMATE_ENCRYPTION_KEY: "{{ lookup('ansible.builtin.env', 'TESLAMATE_ENCRYPTION_KEY') | default(undef('Missing env var: TESLAMATE_ENCRYPTION_KEY'), true) }}"
 TESLAMATE_GRAFANA_USER: "{{ lookup('ansible.builtin.env', 'TESLAMATE_GRAFANA_USER') | default(undef('Missing env var: TESLAMATE_GRAFANA_USER'), true) }}"

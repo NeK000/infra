@@ -28,6 +28,7 @@ Each Docker service host is represented as an Ansible inventory group. The group
 | `monitoring` | `monitoring.ninik.lab` | `10.50.10.213` | Homepage widget sleeper containers |
 | `teslamate` | `teslamate.ninik.lab` | `10.50.10.211` | TeslaMate, Grafana, PostgreSQL, ABRP |
 | `aiml` | `aiml.ninik.lab` | `10.50.10.214` | Immich and NVIDIA-backed ML services |
+| `nextcloud` | `nextcloud.ninik.lab` | `10.50.10.215` | Nextcloud, PostgreSQL, Redis |
 | `pve2` | `pve2` | `10.50.10.10` | Proxmox host package management |
 | `pbs` | `pbs` | `10.50.10.3` | Proxmox Backup Server package management |
 
@@ -310,6 +311,32 @@ The restore helper stops TeslaMate application containers, drops and recreates t
 
 The TeslaMate `TESLAMATE_ENCRYPTION_KEY` must match the original installation that created the backup.
 
+### Nextcloud
+
+Source:
+
+```text
+ansible/services/nextcloud/
+```
+
+Destination:
+
+```text
+/opt/nextcloud
+```
+
+Containers:
+
+- `nextcloud`: Nextcloud Apache app on port 8080.
+- `nextcloud-db`: PostgreSQL database.
+- `nextcloud-redis`: Redis cache.
+- `nextcloud-socket-proxy`: restricted Docker socket proxy for Homepage and tsdproxy discovery.
+
+`nextcloud.ninik.lab` resolves to edge and is proxied to `10.50.10.215:8080`.
+Nextcloud user data is stored on the LXC-mounted ZFS path `/data/nextcloud`.
+`NEXTCLOUD_OVERWRITEHOST` and `NEXTCLOUD_OVERWRITEPROTOCOL` are empty by default so LAN HTTP and Tailscale HTTPS access can keep their own incoming host and scheme. Set them only when Nextcloud should force one canonical URL.
+The database login is controlled by `NEXTCLOUD_DB_USER`, defaulting to `nextcloud`; keep it separate from `NEXTCLOUD_ADMIN_USER`.
+
 ## DNS And Routing
 
 DNS rewrites live in `ansible/group_vars/dns_rewrite_entries.yaml` and are referenced by `ansible/host_vars/dns.ninik.lab.yml`.
@@ -329,6 +356,7 @@ Examples:
 | `homeassistant.ninik.lab` | `IP_EDGE` | App through edge Traefik |
 | `homepage.ninik.lab` | `IP_EDGE` | Local edge app |
 | `traefik.ninik.lab` | `IP_EDGE` | Local edge dashboard |
+| `nextcloud.ninik.lab` | `IP_EDGE` | App through edge Traefik |
 | `dns.ninik.lab` | `IP_DNS` | DNS host and AdGuard |
 
 Traefik routing is split the same way:
@@ -413,6 +441,7 @@ Important secret-backed values include:
 - AdGuard credentials.
 - Tailscale auth key for `tsdproxy`.
 - TeslaMate encryption key, database password, Grafana credentials, ABRP key, and MQTT credentials.
+- Nextcloud admin credentials and database password.
 - API credentials/tokens for Homepage widgets.
 
 Rendered `.env` files are generally mode `0640`. Secret files are rendered with stricter defaults through `compose_stack_secret_files`.

@@ -64,7 +64,7 @@ services:
       homepage.href: http://tsd.ninik.lab/
       traefik.enable: "true"
       traefik.docker.network: edge-stack
-      traefik.http.routers.tsdproxy.rule: Host(`http://tsd.ninik.lab/`)
+      traefik.http.routers.tsdproxy.rule: Host(`tsd.ninik.lab`)
       traefik.http.routers.tsdproxy.entrypoints: web
       traefik.http.services.tsdproxy.loadbalancer.server.port: "8080"
       tsdproxy.enable: "false"

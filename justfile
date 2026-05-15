@@ -24,7 +24,7 @@ all HOST *TAGS:
 
 # docker compose against remote host via Ansible
 compose HOST *V:
-  env ANSIBLE_CONFIG={{ansible_config}} ansible-playbook -i {{inventory}} {{playbook}} --limit {{HOST}} --tags compose {{V}}
+  doppler run -p ninik-lab -c prd -- env ANSIBLE_CONFIG={{ansible_config}} ansible-playbook -b -i {{inventory}} {{playbook}} --limit {{HOST}} --tags compose {{V}}
 
 # Refresh all compose stacks after pulling repo changes
 refresh *V:

@@ -1,7 +1,7 @@
 ---
 services:
   unraid-sleeper-host:
-    image: alpine:3.22
+    image: alpine:3.23
     restart: unless-stopped
     command:
       - /bin/sh
@@ -30,7 +30,7 @@ services:
       - "homepage.widgets[2].pool1=${UNRAID_POOL1:-}"
       - 'homepage.widgets[2].fields=["pool1UsedSpace","pool1FreeSpace","pool1UsedPercent","notifications"]'
   pbs-sleeper-host:
-    image: alpine:3.22
+    image: alpine:3.23
     restart: unless-stopped
     command:
       - /bin/sh
@@ -48,7 +48,7 @@ services:
       - "homepage.widget.username=${PBS_USERNAME:-}"
       - "homepage.widget.password=${PBS_PASSWORD:-}"
   pve2-sleeper-host:
-    image: alpine:3.22
+    image: alpine:3.23
     restart: unless-stopped
     command:
       - /bin/sh
@@ -67,7 +67,7 @@ services:
       - "homepage.widget.password=${PVE2_PASSWORD:-}"
       - "homepage.widget.node=pve2"
   homeassistant-sleeper-host:
-    image: alpine:3.22
+    image: alpine:3.23
     restart: unless-stopped
     command:
       - /bin/sh

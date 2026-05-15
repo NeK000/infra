@@ -47,7 +47,9 @@
     files: "{{ compose_stack_compose_files }}"
     remove_orphans: true
     state: absent
-  when: compose_stack_existing_compose_file_stat.stat.exists
+  when:
+    - compose_stack_remove_before_deploy | bool
+    - compose_stack_existing_compose_file_stat.stat.exists
 
 - name: Find local template files
   ansible.builtin.find:

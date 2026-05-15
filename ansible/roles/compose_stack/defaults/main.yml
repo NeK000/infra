@@ -26,4 +26,5 @@ compose_stack_template_modes: {}
 compose_stack_template_default_mode: "0644"
 
 compose_stack_pull_policy: missing
+compose_stack_remove_before_deploy: true
 compose_stack_wait_timeout: 120

@@ -19,7 +19,7 @@ The active entry points are:
 
 ## Deployment Model
 
-Each Docker service host is represented as an Ansible inventory group. The group name also selects its service stack through `compose_stack_name`.
+Each Docker service host is represented as an Ansible inventory group. The group name also selects its service stack through `compose_stack_name`. Docker service groups are collected under the `compose_stacks` parent group so commands like `just refresh` do not need to list every host.
 
 | Inventory group | Hostname | IP | Main purpose |
 | --- | --- | --- | --- |
@@ -38,6 +38,7 @@ just run edge
 just run dns
 just run monitoring
 just run teslamate
+just refresh
 ```
 
 For secret-backed runs, the `justfile` wraps many commands in `doppler run -p ninik-lab -c prd`.
@@ -148,7 +149,7 @@ It performs this sequence:
 
 1. Validates that the stack variables are set.
 2. Checks whether `services/<stack>/files` and/or `services/<stack>/templates` exist.
-3. Removes the currently deployed Compose project if a compose file already exists.
+3. Removes the currently deployed Compose project if a compose file already exists and `compose_stack_remove_before_deploy` is true.
 4. Creates the destination directories declared in `compose_stack_directories`.
 5. Creates custom-owned directories declared in `compose_stack_directory_specs`.
 6. Copies static files from `services/<stack>/files`.
@@ -156,7 +157,7 @@ It performs this sequence:
 8. Renders secret files from `compose_stack_secret_files`.
 9. Runs `community.docker.docker_compose_v2` with `state: present`, `recreate: always`, and `remove_orphans: true`.
 
-Design implication: every Ansible run recreates the Compose stack. This favors convergence and removes stale containers, but it can cause service restarts even for small config changes.
+Design implication: normal Ansible runs recreate the Compose stack. This favors convergence and removes stale containers, but it can cause service restarts even for small config changes. `just refresh` sets `compose_stack_remove_before_deploy=false`, copies/renders the updated stack files, and then runs the Compose deploy step in an `up -d` style flow across all stack hosts.
 
 ## Services
 

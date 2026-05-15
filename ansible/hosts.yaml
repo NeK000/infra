@@ -1,6 +1,13 @@
 ---
 all:
   children:
+    compose_stacks:
+      children:
+        edge:
+        dns:
+        monitoring:
+        teslamate:
+        aiml:
 
     edge:
       hosts:

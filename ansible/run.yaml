@@ -5,12 +5,16 @@
       - role: geerlingguy.docker
       - role: nvidia_gpu
       - role: compose_stack
+        tags:
+          - compose
 
   - hosts: edge
     roles:
       - role: packages
       - role: geerlingguy.docker
       - role: compose_stack
+        tags:
+          - compose
 
   - hosts: dns
     roles:
@@ -18,6 +22,8 @@
       - role: geerlingguy.docker
       - role: dns_host_prepare
       - role: compose_stack
+        tags:
+          - compose
       - role: adguard_config
         tags:
           - dns_rewrites
@@ -27,9 +33,13 @@
       - role: packages
       - role: geerlingguy.docker
       - role: compose_stack
+        tags:
+          - compose
 
   - hosts: teslamate
     roles:
       - role: packages
       - role: geerlingguy.docker
       - role: compose_stack
+        tags:
+          - compose

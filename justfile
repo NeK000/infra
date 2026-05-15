@@ -26,6 +26,10 @@ all HOST *TAGS:
 compose HOST *V:
   env ANSIBLE_CONFIG={{ansible_config}} ansible-playbook -i {{inventory}} {{playbook}} --limit {{HOST}} --tags compose {{V}}
 
+# Refresh all compose stacks after pulling repo changes
+refresh *V:
+  doppler run -p ninik-lab -c prd -- env ANSIBLE_CONFIG={{ansible_config}} ansible-playbook -b -i {{inventory}} {{playbook}} --limit compose_stacks --tags compose -e compose_stack_remove_before_deploy=false {{V}}
+
 # Core edge nodes (DNS + VIP)
 core *TAGS:
   env ANSIBLE_CONFIG={{ansible_config}} ansible-playbook -b -i {{inventory}} {{playbook}} --limit dns,edge {{TAGS}}

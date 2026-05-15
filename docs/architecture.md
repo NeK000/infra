@@ -20,6 +20,6 @@ Workflow:
 
 Current state:
 
-- `ansible/hosts.ini` is the active static lab inventory.
+- `ansible/hosts.yaml` is the active static lab inventory.
 - The detailed Ansible service architecture, routing model, and deployment drawing are documented in `docs/ansible.md`.
 - The detailed Terraform provisioning architecture, LXC module design, and deployment drawing are documented in `docs/terraform.md`.

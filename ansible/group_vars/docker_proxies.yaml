@@ -1,0 +1,12 @@
+---
+docker_hosts:
+  - name: DNS
+    host: "{{ IP_DNS }}"
+  - name: Monitoring
+    host: "{{ IP_MONITORING }}"
+  - name: TeslaMate
+    host: "{{ IP_TESLAMATE }}"
+  - name: AIML
+    host: "{{ IP_AIML }}"
+  - name: NAS
+    host: "{{ IP_NAS }}"

@@ -1,0 +1,33 @@
+---
+all:
+  children:
+
+    edge:
+      hosts:
+        edge.ninik.lab:
+          ansible_host: 10.50.10.210
+          ansible_ssh_user: root
+
+    dns:
+      hosts:
+        dns.ninik.lab:
+          ansible_host: 10.50.10.212
+          ansible_ssh_user: root
+
+    monitoring:
+      hosts:
+        monitoring.ninik.lab:
+          ansible_host: 10.50.10.213
+          ansible_ssh_user: root
+
+    teslamate:
+      hosts:
+        teslamate.ninik.lab:
+          ansible_host: 10.50.10.211
+          ansible_ssh_user: root
+
+    aiml:
+      hosts:
+        aiml.ninik.lab:
+          ansible_host: 10.50.10.214
+          ansible_ssh_user: root

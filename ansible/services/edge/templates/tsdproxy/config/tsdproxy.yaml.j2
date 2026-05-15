@@ -8,8 +8,8 @@ docker:
     defaultProxyProvider: default
 {% for docker_host in docker_hosts %}
   {{ docker_host.name }}:
-    host: "tcp://{{ docker_host.host }}:{{ docker_host.port }}"
-    targetHostname: "{{ docker_host.target_hostname }}"
+    host: "tcp://{{ docker_host.host }}:{{ docker_host.port | default(2375) }}"
+    targetHostname: "{{ docker_host.target_hostname | default(docker_host.host) }}"
     defaultProxyProvider: {{ docker_host.proxy_provider | default('default') }}
 {% endfor %}
 

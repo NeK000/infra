@@ -8,7 +8,7 @@ Ansible owns ongoing host configuration and Docker-based service deployment afte
 
 The active entry points are:
 
-- Inventory: `ansible/hosts.ini`
+- Inventory: `ansible/hosts.yaml`
 - Playbook: `ansible/run.yaml`
 - Configuration: `ansible/ansible.cfg`
 - Host/group variables: `ansible/group_vars/`
@@ -190,9 +190,9 @@ This is why remote services such as TeslaMate and Home Assistant are represented
 
 Generated edge config:
 
-- `homepage/config/docker.yaml`: generated from `docker_hosts`.
-- `tsdproxy/config/tsdproxy.yaml`: generated from `docker_hosts`.
-- `traefik/dynamic/remote-http.yml`: generated from `remote_http_services`.
+- `homepage/config/docker.yaml`: generated from `docker_hosts` loaded from `ansible/group_vars/docker_proxies.yaml`.
+- `tsdproxy/config/tsdproxy.yaml`: generated from `docker_hosts` loaded from `ansible/group_vars/docker_proxies.yaml`.
+- `traefik/dynamic/remote-http.yml`: generated from `remote_http_services` loaded from `ansible/group_vars/traefik-services.yaml`.
 - `.env`: includes config hashes used as labels to force Compose recreation when config content changes.
 
 ### DNS
@@ -311,7 +311,7 @@ The TeslaMate `TESLAMATE_ENCRYPTION_KEY` must match the original installation th
 
 ## DNS And Routing
 
-DNS rewrites live in `ansible/group_vars/dns.yml`.
+DNS rewrites live in `ansible/group_vars/dns_rewrite_entries.yaml` and are referenced by `ansible/host_vars/dns.ninik.lab.yml`.
 
 There are two classes of names:
 
@@ -338,10 +338,9 @@ Traefik routing is split the same way:
 `remote_http_services` entries have this meaning:
 
 ```yaml
-- name: homeassistant
+- hostname: homeassistant
   host: "{{ IP_HOMEASSISTANT }}"
   port: 8123
-  domain: homeassistant.ninik.lab
 ```
 
 The generated Traefik route is:
@@ -350,7 +349,7 @@ The generated Traefik route is:
 Host(`homeassistant.ninik.lab`) -> http://10.10.1.31:8123
 ```
 
-`domain` is what the client asks for. `host` and `port` are where Traefik sends the request.
+By default, the public domain is `hostname` plus `remote_http_domain_suffix`, so `homeassistant` becomes `homeassistant.ninik.lab`. Set `domain` only when the public name does not follow that convention. `host` and `port` are where Traefik sends the request.
 
 ## Homepage Discovery
 
@@ -379,6 +378,10 @@ Current `docker_hosts` entries cover:
 - NAS
 
 Each remote host must expose a socket proxy on port 2375 for Homepage discovery to work. A service only appears in Homepage if it has the appropriate `homepage.*` Docker labels and Homepage can reach that host's socket proxy.
+
+For tsdproxy, `targetHostname` defaults to the Docker proxy `host` value. Set `target_hostname` only when the proxy address and advertised target hostname must differ.
+
+Docker proxy `port` defaults to `2375`. Set `port` only for endpoints that use a different socket proxy port.
 
 ## Docker Socket Proxies
 

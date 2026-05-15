@@ -5,7 +5,7 @@ edge-local:
 {% for docker_host in docker_hosts %}
 {{ docker_host.name }}:
   host: "{{ docker_host.host }}"
-  port: {{ docker_host.port }}
+  port: {{ docker_host.port | default(2375) }}
 {% if docker_host.protocol is defined %}
   protocol: "{{ docker_host.protocol }}"
 {% endif %}

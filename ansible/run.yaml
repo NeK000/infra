@@ -1,13 +1,4 @@
 ---
-### SERVERS
-  - hosts: pve2
-    roles:
-      - role: packages
-
-  - hosts: pbs
-    roles:
-      - role: packages
-
   - hosts: aiml
     roles:
       - role: packages

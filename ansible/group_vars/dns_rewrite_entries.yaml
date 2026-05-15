@@ -1,7 +1,4 @@
 ---
-dns_work_dir: "{{ compose_stack_dest_dir }}/workdir"
-dns_config_dir: "{{ compose_stack_dest_dir }}/configdir"
-
 dns_rewrite_entries:
   - domain: teslamate.ninik.lab
     answer: "{{ IP_TESLAMATE }}"
@@ -39,19 +36,3 @@ dns_rewrite_entries:
     answer: "{{ IP_PVE2 }}"
   - domain: tsd.ninik.lab
     answer: "{{ IP_EDGE }}"
-
-
-adguard_api_scheme: http
-adguard_api_host: "{{ IP_DNS }}"
-adguard_api_port: 80
-adguard_bootstrap_port: 3000
-adguard_web_bind_ip: 0.0.0.0
-adguard_web_port: 80
-adguard_dns_bind_ip: 0.0.0.0
-adguard_dns_port: 53
-
-compose_stack_extra_directories:
-  - "{{ dns_work_dir }}"
-compose_stack_template_modes:
-  "configdir/AdGuardHome.yaml": "0600"
-  ".env": "0644"

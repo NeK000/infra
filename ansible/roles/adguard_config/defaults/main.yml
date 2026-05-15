@@ -10,5 +10,6 @@ adguard_web_port: 80
 adguard_dns_bind_ip: 0.0.0.0
 adguard_dns_port: 53
 adguard_request_timeout: 10
+adguard_rewrite_changes_no_log: false
 
 dns_rewrite_entries: []

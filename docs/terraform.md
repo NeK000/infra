@@ -38,7 +38,7 @@ flowchart TB
     aiml[aiml LXC<br/>VMID 214<br/>10.50.10.214]
 
     outputs[Terraform outputs<br/>ansible_inventory<br/>lxc_summary]
-    ansible[Ansible<br/>ansible/hosts.ini and run.yaml]
+    ansible[Ansible<br/>ansible/hosts.yaml and run.yaml]
 
     operator -->|just tf HOST or terraform plan/apply| tfenv
     doppler -->|PROXMOX_VE_* env vars| tfenv
@@ -228,7 +228,7 @@ The lab environment exposes two outputs.
 }
 ```
 
-The generated inventory output is not currently the active inventory. The active Ansible inventory is still `ansible/hosts.ini`.
+The generated inventory output is not currently the active inventory. The active Ansible inventory is still `ansible/hosts.yaml`.
 
 ## Authentication And Secrets
 
@@ -304,7 +304,7 @@ Use targeted operations carefully. They are useful for rebuilding one lab LXC, b
 Terraform and Ansible are connected by convention today:
 
 - Terraform creates the LXC with a known name and IP.
-- `ansible/hosts.ini` contains the same hostname and IP.
+- `ansible/hosts.yaml` contains the same hostname and IP.
 - Ansible group names match `ansible_groups` in each Terraform LXC definition.
 
 Example:
@@ -416,7 +416,7 @@ Common things to verify when a new LXC does not behave as expected:
 ## Current Sharp Edges
 
 - Terraform state files are present under `terraform/environments/lab`; be careful not to commit sensitive drift or provider-derived values.
-- The generated Ansible inventory is an output only; it does not update `ansible/hosts.ini`.
+- The generated Ansible inventory is an output only; it does not update `ansible/hosts.yaml`.
 - `just tf HOST` performs a targeted destroy before targeted plan/apply.
 - The VM module is not an active provisioning module yet.
 - `terraform validate` depends on a working local Proxmox provider plugin.

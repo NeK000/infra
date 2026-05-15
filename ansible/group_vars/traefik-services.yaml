@@ -1,0 +1,15 @@
+---
+remote_http_domain_suffix: .ninik.lab
+remote_http_services:
+  - hostname: teslamate-app
+    host: "{{ IP_TESLAMATE }}"
+    port: 4000
+  - hostname: teslamate-grafana
+    host: "{{ IP_TESLAMATE }}"
+    port: 3000
+  - hostname: homeassistant
+    host: "{{ IP_HOMEASSISTANT }}"
+    port: 8123
+  - hostname: immich
+    host: "{{ IP_AIML }}"
+    port: 8080

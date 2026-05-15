@@ -1,0 +1,15 @@
+---
+compose_stack_extra_directories:
+  - "{{ compose_stack_dest_dir }}/backups"
+  - "{{ compose_stack_dest_dir }}/import"
+  - "{{ compose_stack_dest_dir }}/postgres-data"
+  - "{{ compose_stack_dest_dir }}/pgbackrest"
+compose_stack_directory_specs:
+  - path: "{{ compose_stack_dest_dir }}/grafana-data"
+    owner: "472"
+    group: "472"
+compose_stack_template_modes:
+  ".env": "0640"
+  "bin/teslamate-backup": "0755"
+  "bin/teslamate-restore": "0755"
+  "pgbackrest/pgbackrest.conf": "0640"

@@ -110,13 +110,13 @@
   loop: "{{ adguard_rewrite_list.json | default([]) }}"
   loop_control:
     loop_var: existing_rewrite
-    label: "{{ existing_rewrite.domain | default('unknown') }}"
+    label: "{{ existing_rewrite.domain | default('unknown') }}: {{ existing_rewrite.answer | default('unknown') }} -> {{ managed_rewrite.answer | default('unknown') }}"
   vars:
     managed_rewrite: "{{ dns_rewrite_entries | selectattr('domain', 'equalto', existing_rewrite.domain | default('')) | first | default({}) }}"
   when:
     - managed_rewrite | length > 0
     - existing_rewrite.answer | default('') != managed_rewrite.answer
-  no_log: true
+  no_log: "{{ adguard_rewrite_changes_no_log }}"
 
 - name: Read DNS rewrites after cleanup
   ansible.builtin.uri:
@@ -148,8 +148,8 @@
   loop: "{{ dns_rewrite_entries }}"
   loop_control:
     loop_var: rewrite_entry
-    label: "{{ rewrite_entry.domain }}"
+    label: "{{ rewrite_entry.domain }} -> {{ rewrite_entry.answer }}"
   vars:
     existing_domains: "{{ adguard_rewrite_list_after_cleanup.json | default([]) | map(attribute='domain') | list }}"
   when: rewrite_entry.domain not in existing_domains
-  no_log: true
+  no_log: "{{ adguard_rewrite_changes_no_log }}"

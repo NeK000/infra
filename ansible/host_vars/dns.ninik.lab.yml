@@ -1,0 +1,12 @@
+---
+dns_work_dir: "{{ compose_stack_dest_dir }}/workdir"
+dns_config_dir: "{{ compose_stack_dest_dir }}/configdir"
+dns_rewrite_entries: "{{ (lookup('ansible.builtin.template', inventory_dir + '/group_vars/dns_rewrite_entries.yaml') | from_yaml).dns_rewrite_entries }}"
+
+adguard_api_host: "{{ IP_DNS }}"
+
+compose_stack_extra_directories:
+  - "{{ dns_work_dir }}"
+compose_stack_template_modes:
+  "configdir/AdGuardHome.yaml": "0600"
+  ".env": "0644"

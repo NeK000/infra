@@ -1,7 +1,7 @@
 #!/usr/bin/env -S just --justfile
 
 ansible_config := "ansible/ansible.cfg"
-inventory := "ansible/hosts.ini"
+inventory := "ansible/hosts.yaml"
 playbook := "ansible/run.yaml"
 requirements := "ansible/requirements.yaml"
 terraform_lab := "terraform/environments/lab"

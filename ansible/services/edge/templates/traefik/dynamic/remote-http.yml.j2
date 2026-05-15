@@ -2,9 +2,11 @@
 http:
   routers:
 {% for remote_service in remote_http_services | default([]) %}
-{% set service_id = remote_service.traefik_name | default(remote_service.domain | regex_replace('[^A-Za-z0-9-]', '-')) %}
+{% set service_hostname = remote_service.hostname | default(remote_service.name) %}
+{% set service_domain = remote_service.domain | default(service_hostname ~ remote_http_domain_suffix) %}
+{% set service_id = remote_service.traefik_name | default(service_hostname | regex_replace('[^A-Za-z0-9-]', '-')) %}
     {{ service_id }}:
-      rule: "Host(`{{ remote_service.domain }}`)"
+      rule: "Host(`{{ service_domain }}`)"
       entryPoints:
         - {{ remote_service.entrypoint | default('web') }}
       service: {{ service_id }}
@@ -15,7 +17,8 @@ http:
 
   services:
 {% for remote_service in remote_http_services | default([]) %}
-{% set service_id = remote_service.traefik_name | default(remote_service.domain | regex_replace('[^A-Za-z0-9-]', '-')) %}
+{% set service_hostname = remote_service.hostname | default(remote_service.name) %}
+{% set service_id = remote_service.traefik_name | default(service_hostname | regex_replace('[^A-Za-z0-9-]', '-')) %}
     {{ service_id }}:
       loadBalancer:
         passHostHeader: {{ remote_service.pass_host_header | default(true) | ternary('true', 'false') }}

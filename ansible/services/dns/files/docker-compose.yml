@@ -30,7 +30,7 @@ services:
       retries: 3
       start_period: 30s
   edge-socket-proxy:
-    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
     restart: unless-stopped
     ports:
       - "2375:2375"

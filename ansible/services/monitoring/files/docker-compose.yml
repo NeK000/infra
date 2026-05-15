@@ -92,7 +92,7 @@ services:
       - "homepage.widget.custom[3].state=sensor.kontakt_pve2_power"
       - "homepage.widget.custom[3].label=PVE 2"
   monitoring-socket-proxy:
-    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.1
+    image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
     restart: unless-stopped
     ports:
       - "2375:2375"

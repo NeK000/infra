@@ -63,7 +63,7 @@ services:
       PGID: "1000"
       UMASK: "022"
     volumes:
-      - ./immich/photos:/photos
+      - /data/photos:/photos
       - ./immich/libraries:/libraries
       - ./immich/config:/config
     depends_on:
@@ -85,7 +85,7 @@ services:
       homepage.href: http://immich.ninik.lab/
       homepage.description: Photo and video library
       homepage.widget.type: immich
-      homepage.widget.url: http://dns.ninik.lab/
+      homepage.widget.url: http://immich.ninik.lab/
       homepage.widget.key: ${IMMICH_API_KEY}
       homepage.widget.version: 2
       tsdproxy.enable: "true"

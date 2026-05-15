@@ -14,7 +14,7 @@ default_user = "root"
 
 # Non-secret provider settings.
 # The provider endpoint must not include /api2/json.
-proxmox_api_url      = "https://10.50.10.50:8006"
+proxmox_api_url      = "https://10.10.1.50:8006"
 proxmox_insecure_tls = true
 
 # Shared defaults for LXC provisioning.
@@ -37,7 +37,8 @@ proxmox_node_defaults = {
   ssh_public_keys = [
     "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIGG3p4BAp4knnHin4c5jBekR9D9XhRqfFLjlYd1Jxeeg ninik@kontor"
   ]
-  tags = ["lab", "lxc", "terraform"]
+  vlan_tag = 10
+  tags     = ["lab", "lxc", "terraform"]
 }
 
 lxcs = {
@@ -75,7 +76,7 @@ lxcs = {
     description    = "Fresh LXC managed by Terraform"
     ip_address     = "10.50.10.212"
     nameserver     = "10.50.10.1"
-    rootfs_size_gb = 16
+    rootfs_size_gb = 12
     cores          = 2
     memory_mb      = 2048
     swap_mb        = 512
@@ -95,24 +96,25 @@ lxcs = {
     ansible_groups = ["monitoring"]
   }
   aiml = {
-    name           = "aiml"
-    vm_id          = 214
-    target_node    = "pve-intel"
-    hostname       = "aiml"
-    description    = "Fresh LXC managed by Terraform"
-    ip_address     = "10.50.10.214"
-    rootfs_size_gb = 25
-    cores          = 4
-    memory_mb      = 8192
-    swap_mb        = 1024
-    ansible_groups = ["aiml"]
+    name                             = "aiml"
+    vm_id                            = 214
+    target_node                      = "pve-intel"
+    hostname                         = "aiml"
+    description                      = "Fresh LXC managed by Terraform"
+    ip_address                       = "10.50.10.214"
+    rootfs_size_gb                   = 25
+    cores                            = 4
+    memory_mb                        = 8192
+    swap_mb                          = 1024
+    ansible_groups                   = ["aiml"]
+    post_create_reboot_delay_seconds = 10
     mount_points = [
       {
         path   = "/data/photos"
-        volume = "/rpool/data/aiml-photos"
+        volume = "/hdd-zfs/immich"
       }
     ]
-    raw_lxc_config_ssh_host = "10.50.10.50"
+    raw_lxc_config_ssh_host = "10.10.1.50"
     raw_lxc_config = [
       "lxc.idmap: u 0 100000 65536",
       "lxc.idmap: g 0 100000 65536",

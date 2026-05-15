@@ -154,6 +154,12 @@ variable "raw_lxc_config_ssh_host" {
   default     = null
 }
 
+variable "post_create_reboot_delay_seconds" {
+  type        = number
+  description = "When greater than zero, wait this many seconds after provisioning and then reboot the LXC over SSH from the Proxmox host."
+  default     = 0
+}
+
 locals {
   container_hostname      = coalesce(var.hostname, var.name)
   template_file_id        = "${var.ostemplate_storage}:vztmpl/${var.ostemplate}"
@@ -291,6 +297,35 @@ ssh root@${local.raw_lxc_config_ssh_host} 'set -eu
 if pct status ${var.vm_id} | grep -q "status: running"; then
   pct stop ${var.vm_id}
 fi
+pct start ${var.vm_id}
+'
+EOT
+  }
+}
+
+resource "terraform_data" "post_create_reboot" {
+  count = var.post_create_reboot_delay_seconds > 0 ? 1 : 0
+
+  depends_on = [
+    proxmox_virtual_environment_container.this,
+    terraform_data.raw_lxc_config,
+  ]
+
+  triggers_replace = {
+    delay_seconds = var.post_create_reboot_delay_seconds
+    ssh_host      = local.raw_lxc_config_ssh_host
+    target_node   = var.target_node
+    vm_id         = var.vm_id
+    container_id  = proxmox_virtual_environment_container.this.id
+  }
+
+  provisioner "local-exec" {
+    command = <<-EOT
+set -eu
+ssh root@${local.raw_lxc_config_ssh_host} 'set -eu
+sleep ${var.post_create_reboot_delay_seconds}
+pct stop ${var.vm_id}
+sleep ${var.post_create_reboot_delay_seconds}
 pct start ${var.vm_id}
 '
 EOT

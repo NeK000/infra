@@ -44,7 +44,7 @@ services:
       tsdproxy.enable: "false"
 
   tsdproxy:
-    image: almeidapaulopt/tsdproxy:1.4.7
+    image: almeidapaulopt/tsdproxy:2.1.0
     restart: unless-stopped
     environment:
       TZ: ${TIMEZONE}

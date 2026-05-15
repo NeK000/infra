@@ -93,7 +93,7 @@ services:
       homepage.description: TeslaMate Grafana dashboards
 
   teslamate-abrp:
-    image: fetzu/teslamate-abrp:3.4.0
+    image: fetzu/teslamate-abrp:3.4.1
     restart: unless-stopped
     networks:
       - teslamate-stack

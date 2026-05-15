@@ -356,6 +356,7 @@ Examples:
 | `homeassistant.ninik.lab` | `IP_EDGE` | App through edge Traefik |
 | `homepage.ninik.lab` | `IP_EDGE` | Local edge app |
 | `traefik.ninik.lab` | `IP_EDGE` | Local edge dashboard |
+| `llama.ninik.lab` | `IP_EDGE` | Ollama API through edge Traefik |
 | `nextcloud.ninik.lab` | `IP_EDGE` | App through edge Traefik |
 | `dns.ninik.lab` | `IP_DNS` | DNS host and AdGuard |
 

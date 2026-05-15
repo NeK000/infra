@@ -12,6 +12,7 @@ compose_stack_extra_directories:
   - "{{ compose_stack_dest_dir }}/immich/libraries"
   - "{{ compose_stack_dest_dir }}/immich/photos"
   - "{{ compose_stack_dest_dir }}/immich/postgres-data"
+  - "{{ compose_stack_dest_dir }}/ollama"
 
 nvidia_gpu_driver_version: "550.163.01"
 nvidia_gpu_container_name: ollama

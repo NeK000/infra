@@ -93,6 +93,39 @@ services:
       tsdproxy.container_port: "8080"
       tsdproxy.ephemeral: "true"
 
+  ollama:
+    image: ollama/ollama:0.17.7
+    restart: unless-stopped
+    runtime: nvidia
+    networks:
+      - aiml-stack
+    ports:
+      - "11434:11434"
+    environment:
+      TZ: ${TIMEZONE}
+      OLLAMA_ORIGINS: "*"
+      NVIDIA_VISIBLE_DEVICES: all
+      NVIDIA_DRIVER_CAPABILITIES: all
+    volumes:
+      - ./ollama:/root/.ollama
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities:
+                - gpu
+    labels:
+      homepage.group: Services
+      homepage.name: Ollama
+      homepage.href: http://llama.ninik.lab/
+      homepage.description: Local LLM runtime
+      tsdproxy.enable: "true"
+      tsdproxy.name: llama
+      tsdproxy.container_port: "11434"
+      tsdproxy.ephemeral: "true"
+
   aiml-socket-proxy:
     image: ghcr.io/tecnativa/docker-socket-proxy:v0.4.2
     restart: unless-stopped

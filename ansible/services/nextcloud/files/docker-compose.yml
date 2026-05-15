@@ -1,7 +1,7 @@
 ---
 services:
   nextcloud-db:
-    image: postgres:18.1-alpine
+    image: postgres:18.4-alpine
     restart: unless-stopped
     networks:
       - nextcloud-stack

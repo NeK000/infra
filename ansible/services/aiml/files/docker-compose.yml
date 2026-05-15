@@ -94,7 +94,7 @@ services:
       tsdproxy.ephemeral: "true"
 
   ollama:
-    image: ollama/ollama:0.17.7
+    image: ollama/ollama:0.24.0
     restart: unless-stopped
     runtime: nvidia
     networks:

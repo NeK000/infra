@@ -10,4 +10,5 @@ nvidia_gpu_container_toolkit_key_ascii_path: /usr/share/keyrings/nvidia-containe
 nvidia_gpu_container_toolkit_keyring_path: /usr/share/keyrings/nvidia-container-toolkit-keyring.gpg
 nvidia_gpu_container_toolkit_repo_path: /etc/apt/sources.list.d/nvidia-container-toolkit.list
 nvidia_gpu_configure_docker_runtime: true
+nvidia_gpu_disable_container_runtime_cgroups: true
 nvidia_gpu_validation_driver_capabilities: compute,utility

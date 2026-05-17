@@ -17,6 +17,7 @@ tailscale:
   providers:
     default:
       authKeyFile: /run/secrets/tailscale_authkey
+      maxCertConcurrency: 1
 {% for docker_host in docker_hosts %}
 {% if docker_host.proxy_provider is defined and docker_host.proxy_provider != 'default' %}
     {{ docker_host.proxy_provider }}:

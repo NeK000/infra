@@ -40,6 +40,12 @@ services:
     image: ghcr.io/imagegenius/immich:2.7.5
     restart: unless-stopped
     runtime: nvidia
+    devices:
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     networks:
       - aiml-stack
     ports:
@@ -90,13 +96,20 @@ services:
       homepage.widget.version: 2
       tsdproxy.enable: "true"
       tsdproxy.name: immich
-      tsdproxy.container_port: "8080"
+      tsdproxy.port.1: "80/http:8080/http"
       tsdproxy.ephemeral: "true"
 
   ollama:
     image: ollama/ollama:0.17.7
     restart: unless-stopped
     runtime: nvidia
+    gpus: all
+    devices:
+      - /dev/nvidia0:/dev/nvidia0
+      - /dev/nvidiactl:/dev/nvidiactl
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
     networks:
       - aiml-stack
     ports:
@@ -104,8 +117,9 @@ services:
     environment:
       TZ: ${TIMEZONE}
       OLLAMA_ORIGINS: "*"
+      OLLAMA_LLM_LIBRARY: cuda_v12
       NVIDIA_VISIBLE_DEVICES: all
-      NVIDIA_DRIVER_CAPABILITIES: all
+      NVIDIA_DRIVER_CAPABILITIES: compute,utility
     volumes:
       - ./ollama:/root/.ollama
     deploy:
@@ -123,7 +137,7 @@ services:
       homepage.description: Local LLM runtime
       tsdproxy.enable: "true"
       tsdproxy.name: llama
-      tsdproxy.container_port: "11434"
+      tsdproxy.port.1: "80/http:11434/http"
       tsdproxy.ephemeral: "true"
 
   aiml-socket-proxy:

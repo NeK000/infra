@@ -7,6 +7,44 @@
       - role: compose_stack
         tags:
           - compose
+    tasks:
+      - name: Validate Ollama container sees NVIDIA runtime
+        ansible.builtin.command:
+          argv:
+            - docker
+            - compose
+            - -p
+            - "{{ compose_stack_project_name }}"
+            - -f
+            - "{{ compose_stack_dest_dir }}/docker-compose.yml"
+            - exec
+            - -T
+            - ollama
+            - bash
+            - -lc
+            - >-
+              test -e /dev/nvidia0 &&
+              test -e /dev/nvidiactl &&
+              test -e /dev/nvidia-uvm &&
+              ldconfig -p | grep -q libcuda.so.1 &&
+              ldconfig -p | grep -q libnvidia-ml.so.1 &&
+              nvidia-smi
+        changed_when: false
+        tags:
+          - compose
+          - nvidia
+
+      - name: Validate Ollama discovered CUDA GPU
+        ansible.builtin.shell: |
+          set -o pipefail
+          docker logs --since 5m {{ compose_stack_project_name }}-ollama-1 2>&1 \
+            | grep -Ei 'inference compute.*library=(cuda|cuda_v[0-9]+)'
+        args:
+          executable: /bin/bash
+        changed_when: false
+        tags:
+          - compose
+          - nvidia
 
   - hosts: edge
     roles:

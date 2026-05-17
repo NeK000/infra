@@ -34,7 +34,7 @@ proxmox_node_defaults = {
   cidr_prefix        = 24
   nameserver         = "10.50.10.212"
   search_domain      = "ninik.lab"
-  description    = "Fresh LXC managed by Terraform"
+  description        = "Fresh LXC managed by Terraform"
   memory_mb          = 2048
   swap_mb            = 512
   cores              = 2
@@ -107,12 +107,15 @@ lxcs = {
       "lxc.idmap: g 0 100000 65536",
       "lxc.cgroup2.devices.allow: c 195:* rwm",
       "lxc.cgroup2.devices.allow: c 510:* rwm",
+      "lxc.cgroup2.devices.allow: c 511:* rwm",
+      "lxc.cgroup2.devices.allow: c 234:* rwm",
       "lxc.cgroup2.devices.allow: c 235:* rwm",
-      "lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,optional,create=file",
-      "lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,optional,create=file",
-      "lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,optional,create=file",
-      "lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,optional,create=file",
-      "lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,optional,create=file",
+      "lxc.cgroup2.devices.allow: c 236:* rwm",
+      "lxc.mount.entry: /dev/nvidia0 dev/nvidia0 none bind,create=file",
+      "lxc.mount.entry: /dev/nvidiactl dev/nvidiactl none bind,create=file",
+      "lxc.mount.entry: /dev/nvidia-modeset dev/nvidia-modeset none bind,create=file",
+      "lxc.mount.entry: /dev/nvidia-uvm dev/nvidia-uvm none bind,create=file",
+      "lxc.mount.entry: /dev/nvidia-uvm-tools dev/nvidia-uvm-tools none bind,create=file",
       "lxc.mount.entry: /dev/nvidia-caps dev/nvidia-caps none bind,optional,create=dir",
       "lxc.mount.entry: /usr/bin/nvidia-smi usr/bin/nvidia-smi none bind,ro,optional,create=file",
       "lxc.mount.entry: /usr/lib/x86_64-linux-gnu/nvidia/current/libnvidia-ml.so.550.163.01 usr/lib/x86_64-linux-gnu/libnvidia-ml.so.550.163.01 none bind,ro,optional,create=file",

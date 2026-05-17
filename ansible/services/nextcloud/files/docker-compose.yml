@@ -73,7 +73,7 @@ services:
       homepage.description: Files and collaboration
       tsdproxy.enable: "true"
       tsdproxy.name: nextcloud
-      tsdproxy.container_port: "80"
+      tsdproxy.port.1: "80/http:80/http"
       tsdproxy.ephemeral: "true"
 
   nextcloud-socket-proxy:

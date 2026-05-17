@@ -10,5 +10,3 @@ docker_hosts:
     host: "{{ IP_AIML }}"
   - name: Nextcloud
     host: "{{ IP_NEXTCLOUD }}"
-  - name: NAS
-    host: "{{ IP_NAS }}"

@@ -39,6 +39,11 @@
   ansible.builtin.stat:
     path: "{{ item }}"
   loop:
+    - /dev/nvidia0
+    - /dev/nvidiactl
+    - /dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools
+    - /dev/nvidia-caps
     - /usr/bin/nvidia-smi
     - "/usr/lib/x86_64-linux-gnu/libnvidia-ml.so.{{ nvidia_gpu_driver_version }}"
     - "/usr/lib/x86_64-linux-gnu/libcuda.so.{{ nvidia_gpu_driver_version }}"
@@ -53,9 +58,22 @@
       | map(attribute='item')
       | list
       }}. Run Terraform for aiml, then stop/start CT 214 so Proxmox applies
-      the raw lxc.mount.entry lines. Do not install Ubuntu nvidia-utils or
-      libnvidia packages in the guest.
+      the raw LXC device and library passthrough. Do not install Ubuntu
+      nvidia-utils or libnvidia packages in the guest.
   when: nvidia_gpu_bind_mounts.results | rejectattr('stat.exists') | list | length > 0
+
+- name: Validate NVIDIA device nodes from LXC passthrough
+  ansible.builtin.command:
+    argv:
+      - test
+      - -c
+      - "{{ item }}"
+  loop:
+    - /dev/nvidia0
+    - /dev/nvidiactl
+    - /dev/nvidia-uvm
+    - /dev/nvidia-uvm-tools
+  changed_when: false
 
 - name: Ensure NVIDIA library directory exists
   ansible.builtin.file:
@@ -125,6 +143,30 @@
     state: present
     update_cache: true
 
+- name: Check NVIDIA runtime cgroup management setting
+  ansible.builtin.shell: |
+    set -o pipefail
+    grep -Eq '^[[:space:]]*no-cgroups[[:space:]]*=[[:space:]]*true[[:space:]]*$' /etc/nvidia-container-runtime/config.toml
+  args:
+    executable: /bin/bash
+  register: nvidia_gpu_no_cgroups
+  changed_when: false
+  failed_when: false
+  when: nvidia_gpu_disable_container_runtime_cgroups | bool
+
+- name: Disable NVIDIA runtime cgroup management in LXC
+  ansible.builtin.command:
+    argv:
+      - nvidia-ctk
+      - config
+      - --set
+      - nvidia-container-cli.no-cgroups=true
+      - --in-place
+  notify: Restart docker
+  when:
+    - nvidia_gpu_disable_container_runtime_cgroups | bool
+    - nvidia_gpu_no_cgroups.rc != 0
+
 - name: Install Python Docker module dependencies
   ansible.builtin.apt:
     name:
@@ -175,6 +217,16 @@
       - run
       - --rm
       - --runtime=nvidia
+      - --device
+      - /dev/nvidia0:/dev/nvidia0
+      - --device
+      - /dev/nvidiactl:/dev/nvidiactl
+      - --device
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      - --device
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+      - --device
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
       - -e
       - NVIDIA_VISIBLE_DEVICES=all
       - -e
@@ -182,4 +234,55 @@
       - "{{ nvidia_gpu_cuda_validation_image }}"
       - nvidia-smi
   register: nvidia_gpu_cuda_validation
+  changed_when: false
+
+- name: Validate NVIDIA CUDA devices and libraries in Docker
+  ansible.builtin.command:
+    argv:
+      - docker
+      - run
+      - --rm
+      - --runtime=nvidia
+      - --device
+      - /dev/nvidia0:/dev/nvidia0
+      - --device
+      - /dev/nvidiactl:/dev/nvidiactl
+      - --device
+      - /dev/nvidia-modeset:/dev/nvidia-modeset
+      - --device
+      - /dev/nvidia-uvm:/dev/nvidia-uvm
+      - --device
+      - /dev/nvidia-uvm-tools:/dev/nvidia-uvm-tools
+      - -e
+      - NVIDIA_VISIBLE_DEVICES=all
+      - -e
+      - "NVIDIA_DRIVER_CAPABILITIES={{ nvidia_gpu_validation_driver_capabilities }}"
+      - "{{ nvidia_gpu_cuda_validation_image }}"
+      - bash
+      - -lc
+      - |
+        set -eu
+        missing=0
+        for path in /dev/nvidia0 /dev/nvidiactl /dev/nvidia-uvm; do
+          if [ ! -e "$path" ]; then
+            echo "missing device: $path"
+            missing=1
+          fi
+        done
+        if ! ldconfig -p | grep -q libcuda.so.1; then
+          echo "missing linker entry: libcuda.so.1"
+          missing=1
+        fi
+        if ! ldconfig -p | grep -q libnvidia-ml.so.1; then
+          echo "missing linker entry: libnvidia-ml.so.1"
+          missing=1
+        fi
+        if [ "$missing" -ne 0 ]; then
+          echo "NVIDIA devices visible:"
+          ls -l /dev/nvidia* /dev/nvidia-caps/* 2>/dev/null || true
+          echo "NVIDIA linker entries visible:"
+          ldconfig -p | grep -E 'libcuda|libnvidia-ml' || true
+          exit 1
+        fi
+  register: nvidia_gpu_cuda_device_validation
   changed_when: false
